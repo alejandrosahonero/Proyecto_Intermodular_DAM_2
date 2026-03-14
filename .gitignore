@@ -1,0 +1,14 @@
+# Android and Gradle build files
+**/build/
+**/.gradle/
+
+# Security and Secrets
+**/google-services.json
+**/*.jks
+**/*.keystore
+**/secrets.properties
+
+# Trash and user-specific Android Studio settings
+.DS_Store
+**/.idea/
+**/*.iml
