@@ -43,7 +43,7 @@ Para el desarrollo de la interfaz se han seguido los lineamientos de **Material 
 | Interfaz de Usuario (Cliente) | Módulo de Administración (Puerta) |
 | :---: | :---: |
 | ![Home de Usuario](mockups/design/customer_home.png) | ![Home de Administrador](mockups/design/admin_home.png) |
-| *Dashboard principal para gestión de reservas* | *Terminal de validación para control de acceso* |
+| *Dashboard principal el usuario* | *Dashboard principal para el administrador* |
 
 > [!TIP]
 > Puedes consultar el prototipo interactivo completo y el flujo de navegación en el siguiente enlace:
