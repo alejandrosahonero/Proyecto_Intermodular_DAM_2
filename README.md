@@ -36,6 +36,21 @@ Este proyecto es una aplicación móvil nativa para Android desarrollada en **Ko
 
 ---
 
+## Diseño UI/UX
+
+Para el desarrollo de la interfaz se han seguido los lineamientos de **Material Design 3**, priorizando la legibilidad en entornos exteriores y la eficiencia en la navegación.
+
+| Interfaz de Usuario (Cliente) | Módulo de Administración (Puerta) |
+| :---: | :---: |
+| ![Home de Usuario](mockups/design/customer_home.png) | ![Home de Administrador](mockups/design/admin_home.png) |
+| *Dashboard principal para gestión de reservas* | *Terminal de validación para control de acceso* |
+
+> [!TIP]
+> Puedes consultar el prototipo interactivo completo y el flujo de navegación en el siguiente enlace:
+> [Acceder al proyecto en Figma](https://shove-hue-92607961.figma.site)
+
+---
+
 ## Planificación (50 Horas)
 
 | Semana | Actividad Principal | Hito Técnico |
