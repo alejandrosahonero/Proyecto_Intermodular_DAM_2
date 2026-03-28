@@ -1,0 +1,671 @@
+{
+  "modelName": "New model",
+  "collections": [
+    {
+      "collectionName": "courts",
+      "type": "object",
+      "properties": [
+        {
+          "primaryKey": true,
+          "properties": [],
+          "additionalProperties": false,
+          "childType": "object",
+          "type": "document",
+          "documentId": true,
+          "containerLevelKey": true,
+          "hasERDDivider": true,
+          "name": "id",
+          "isActivated": true,
+          "GUID": "afa7f1a5-8fb4-45d5-9c55-ef456ffe7a9b",
+          "sampleName": "",
+          "isPatternField": true,
+          "error": {
+            "name": false,
+            "sampleName": false
+          }
+        },
+        {
+          "name": "name",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "46ad0b21-0c58-47f1-a77d-69f56bf5e478",
+          "error": {}
+        },
+        {
+          "name": "type",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "f6f323bf-a39a-444a-9e2c-7501fe8764c0",
+          "error": {}
+        },
+        {
+          "name": "pricePerHour",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "primaryKey": false,
+          "childType": "number",
+          "type": "numeric",
+          "error": {},
+          "GUID": "b45f5b46-abad-4be9-8ff3-f67e2e0389b2"
+        },
+        {
+          "name": "isEnabled",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "childType": "boolean",
+          "type": "boolean",
+          "error": {},
+          "GUID": "adec9381-7ef0-4344-ae8b-ea9805fb8d31"
+        },
+        {
+          "name": "description",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "6c85a2ba-5064-4681-8269-9d2151a135b9",
+          "error": {}
+        },
+        {
+          "name": "imageUrl",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "dda4b505-8713-4152-98fa-22cb20a1aacf",
+          "error": {}
+        },
+        {
+          "name": "disabledreason",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "8e8a05a2-11f8-45a2-9041-4ae5930ca73c",
+          "error": {}
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "d2537c1f-c97e-4e7e-a09d-533dd316b66d"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "GUID": "4d88c2cc-b6f2-4e92-a82e-96e078d72879",
+      "bucketId": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "id": "id",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      }
+    },
+    {
+      "collectionName": "reservations",
+      "type": "object",
+      "properties": [
+        {
+          "primaryKey": true,
+          "properties": [],
+          "additionalProperties": false,
+          "childType": "object",
+          "type": "document",
+          "documentId": true,
+          "containerLevelKey": true,
+          "hasERDDivider": true,
+          "name": "id",
+          "isActivated": true,
+          "GUID": "40116dc6-db46-4ff1-9e44-a198aaf3cc22",
+          "sampleName": "",
+          "isPatternField": true,
+          "error": {
+            "name": false,
+            "sampleName": false
+          }
+        },
+        {
+          "name": "userId",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "7ab79e85-42cd-440f-88b0-c55d22ce08cb",
+          "error": {}
+        },
+        {
+          "name": "userName",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "9f3b3962-6837-46ec-a63a-72f2d653f5ec",
+          "error": {}
+        },
+        {
+          "name": "courtId",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "f4bfb0c9-efd2-41d1-bebe-c293ff3ca719",
+          "error": {
+            "enum": false,
+            "enums": [],
+            "name": false,
+            "code": false
+          }
+        },
+        {
+          "name": "courtName",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "7c0d2276-b4da-49ae-8146-558c37d58ccd",
+          "error": {}
+        },
+        {
+          "name": "date",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "b54ca690-5112-4b21-962f-2833ffd756b3"
+        },
+        {
+          "name": "startTime",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "GUID": "a9a54972-c6ca-4a1f-8e1d-b3b1c32bda55",
+          "error": {}
+        },
+        {
+          "name": "endTime",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "5005bacb-2a0e-4f26-bd0c-9edddd9c5a03"
+        },
+        {
+          "name": "status",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "81c0b4f5-662f-43ce-b86c-48d875a503d6",
+          "error": {}
+        },
+        {
+          "name": "totalPrice",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "exclusiveMinimum": false,
+          "exclusiveMaximum": false,
+          "primaryKey": false,
+          "childType": "number",
+          "type": "numeric",
+          "error": {},
+          "GUID": "782f70a1-2f54-4414-bff4-e15e100af80a"
+        },
+        {
+          "name": "paymentId",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "3c42ca62-195d-4d5f-a295-719c4d9a9804",
+          "error": {}
+        },
+        {
+          "name": "accessCode",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "50876098-0d7b-4982-8472-7ef490e9bc17",
+          "error": {}
+        },
+        {
+          "name": "accessCodeStatus",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "da11f2a7-0eb4-441b-8160-bd9ee98f20e7",
+          "error": {}
+        },
+        {
+          "name": "qrData",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "01ea1bf1-601e-4812-9c91-6c1b862d1cbd",
+          "error": {}
+        },
+        {
+          "name": "createdat",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "f7b3249f-c617-4912-a2fc-e6866b7983af"
+        },
+        {
+          "name": "scannedAt",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "0c9decd8-48dd-4f01-808d-952ae7d394b9"
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "fbf5f634-0ab1-4aea-9281-c0248b11ef47"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "GUID": "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c",
+      "bucketId": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      },
+      "id": "id"
+    },
+    {
+      "collectionName": "users",
+      "type": "object",
+      "properties": [
+        {
+          "name": "uid",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": true,
+          "properties": [],
+          "additionalProperties": false,
+          "childType": "object",
+          "type": "document",
+          "documentId": true,
+          "containerLevelKey": true,
+          "hasERDDivider": true,
+          "required": true,
+          "GUID": "9fe2db66-b676-4b59-a903-e9c05838403c",
+          "error": {}
+        },
+        {
+          "name": "name",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "38178cad-d0e2-4cd6-a243-7d0daccd1d5a",
+          "error": {}
+        },
+        {
+          "name": "email",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "26dfbcc7-d37f-4df9-a2e4-316225472e2a",
+          "error": {}
+        },
+        {
+          "name": "last_name",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "23088eb3-a2ef-4a22-9f9a-b4ee21a389a6",
+          "error": {}
+        },
+        {
+          "name": "role",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "error": {},
+          "GUID": "857ff910-8c8e-4793-a54d-20a6e9b91620"
+        },
+        {
+          "name": "fcmToken",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "c3f97804-4aa6-45c6-962a-def52ea7b7fc",
+          "error": {}
+        },
+        {
+          "name": "createdAt",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "3e32392a-f207-4134-8e07-4cb0e1b3cac9"
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "37fcea3d-4cde-4e2e-a676-cab6551dcae2"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "GUID": "325f2905-0aae-45f7-8233-db831ede5cf8",
+      "bucketId": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      }
+    },
+    {
+      "collectionName": "notifications",
+      "type": "object",
+      "properties": [
+        {
+          "primaryKey": true,
+          "properties": [],
+          "additionalProperties": false,
+          "childType": "object",
+          "type": "document",
+          "documentId": true,
+          "containerLevelKey": true,
+          "hasERDDivider": true,
+          "name": "id",
+          "isActivated": true,
+          "GUID": "20f95170-750a-4375-8bbd-9e4d5ec80fa4",
+          "sampleName": "",
+          "isPatternField": true,
+          "error": {
+            "name": false,
+            "sampleName": false
+          }
+        },
+        {
+          "name": "userId",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "37e716bd-a588-467f-8e2a-b6003c068865",
+          "error": {}
+        },
+        {
+          "name": "title",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "58344c37-aa6e-48d8-9e6b-b231340db2ba",
+          "error": {}
+        },
+        {
+          "name": "body",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "40de3052-c54e-4a0d-8842-7c629a2b2ce5",
+          "error": {}
+        },
+        {
+          "name": "type",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "b0379176-c3c1-47c2-8f22-bbd7c1d259d8",
+          "error": {}
+        },
+        {
+          "name": "isRead",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "childType": "boolean",
+          "type": "boolean",
+          "error": {},
+          "GUID": "271884dc-e1e3-4fee-a2f7-967ca65b05ea"
+        },
+        {
+          "name": "createdAt",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "error": {},
+          "GUID": "4764a79e-faf0-4e02-b146-379e2f3ded08"
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "aaac3205-c171-4b39-9991-f52791f2b257"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "GUID": "69ecd016-12ea-4741-bc48-7fb8a8d14118",
+      "bucketId": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      }
+    }
+  ],
+  "buckets": [
+    {
+      "name": "Court Management",
+      "type": "bucket",
+      "collectionIds": [
+        "4d88c2cc-b6f2-4e92-a82e-96e078d72879",
+        "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c",
+        "325f2905-0aae-45f7-8233-db831ede5cf8",
+        "69ecd016-12ea-4741-bc48-7fb8a8d14118"
+      ],
+      "backgroundColor": {
+        "r": 129,
+        "g": 212,
+        "b": 250,
+        "a": 1
+      },
+      "show": true,
+      "isActivated": true,
+      "indexes": [],
+      "GUID": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "documentIdName": "^[a-zA-Z0-9_.-]{20}$",
+      "documentIdType": "object",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      }
+    }
+  ],
+  "views": [],
+  "relationships": [],
+  "users": [],
+  "diagramViews": [],
+  "idToNameHashTable": {
+    "1df3198f-3e71-4271-a1c2-d0bc42413172": "Court Management",
+    "afa7f1a5-8fb4-45d5-9c55-ef456ffe7a9b": "id",
+    "4d88c2cc-b6f2-4e92-a82e-96e078d72879": "courts",
+    "46ad0b21-0c58-47f1-a77d-69f56bf5e478": "name",
+    "f6f323bf-a39a-444a-9e2c-7501fe8764c0": "type",
+    "b45f5b46-abad-4be9-8ff3-f67e2e0389b2": "pricePerHour",
+    "40116dc6-db46-4ff1-9e44-a198aaf3cc22": "id",
+    "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c": "reservations",
+    "7ab79e85-42cd-440f-88b0-c55d22ce08cb": "userId",
+    "f4bfb0c9-efd2-41d1-bebe-c293ff3ca719": "courtId",
+    "b54ca690-5112-4b21-962f-2833ffd756b3": "date",
+    "a9a54972-c6ca-4a1f-8e1d-b3b1c32bda55": "startTime",
+    "782f70a1-2f54-4414-bff4-e15e100af80a": "totalPrice",
+    "325f2905-0aae-45f7-8233-db831ede5cf8": "users",
+    "38178cad-d0e2-4cd6-a243-7d0daccd1d5a": "name",
+    "23088eb3-a2ef-4a22-9f9a-b4ee21a389a6": "last_name",
+    "857ff910-8c8e-4793-a54d-20a6e9b91620": "role",
+    "9fe2db66-b676-4b59-a903-e9c05838403c": "uid",
+    "26dfbcc7-d37f-4df9-a2e4-316225472e2a": "email",
+    "c3f97804-4aa6-45c6-962a-def52ea7b7fc": "fcmToken",
+    "3e32392a-f207-4134-8e07-4cb0e1b3cac9": "createdAt",
+    "adec9381-7ef0-4344-ae8b-ea9805fb8d31": "isEnabled",
+    "6c85a2ba-5064-4681-8269-9d2151a135b9": "description",
+    "7c0d2276-b4da-49ae-8146-558c37d58ccd": "courtName",
+    "5005bacb-2a0e-4f26-bd0c-9edddd9c5a03": "endTime",
+    "81c0b4f5-662f-43ce-b86c-48d875a503d6": "status",
+    "3c42ca62-195d-4d5f-a295-719c4d9a9804": "paymentId",
+    "50876098-0d7b-4982-8472-7ef490e9bc17": "accessCode",
+    "01ea1bf1-601e-4812-9c91-6c1b862d1cbd": "qrData",
+    "f7b3249f-c617-4912-a2fc-e6866b7983af": "createdat",
+    "da11f2a7-0eb4-441b-8160-bd9ee98f20e7": "accessCodeStatus",
+    "9f3b3962-6837-46ec-a63a-72f2d653f5ec": "userName",
+    "0c9decd8-48dd-4f01-808d-952ae7d394b9": "scannedAt",
+    "dda4b505-8713-4152-98fa-22cb20a1aacf": "imageUrl",
+    "8e8a05a2-11f8-45a2-9041-4ae5930ca73c": "disabledreason",
+    "20f95170-750a-4375-8bbd-9e4d5ec80fa4": "id",
+    "69ecd016-12ea-4741-bc48-7fb8a8d14118": "notifications",
+    "37e716bd-a588-467f-8e2a-b6003c068865": "userId",
+    "58344c37-aa6e-48d8-9e6b-b231340db2ba": "title",
+    "40de3052-c54e-4a0d-8842-7c629a2b2ce5": "body",
+    "b0379176-c3c1-47c2-8f22-bbd7c1d259d8": "type",
+    "271884dc-e1e3-4fee-a2f7-967ca65b05ea": "isRead",
+    "4764a79e-faf0-4e02-b146-379e2f3ded08": "createdAt"
+  },
+  "definitions": {
+    "type": "definitions",
+    "properties": [],
+    "GUID": "61995747-95a8-4510-9a65-20d84c4d90e9"
+  },
+  "polyglotDefinitions": {
+    "type": "polyglotDefinitions",
+    "properties": [],
+    "GUID": "11181ff6-8029-4926-8396-9838d569334b"
+  },
+  "externalDefinitions": {
+    "type": "externalDefinitions",
+    "properties": [],
+    "GUID": "3edb235d-00e8-4d05-b03f-aef63cef1eff"
+  },
+  "sources": [],
+  "decorativeSymbols": [],
+  "dbVendor": "Cloud Firestore",
+  "appTarget": "FIRESTORE",
+  "creationTS": "2026-03-15T01:04:33.754Z",
+  "GUID": "e82b0d00-8073-4700-b1b3-d9fd1fba8c83",
+  "isLineageEnabled": false,
+  "lastModifTS": "2026-03-28T13:26:38.012Z",
+  "persistenceSchemaVersion": "8",
+  "isCreatedByPlugin": true,
+  "pluginInformation": {
+    "pluginName": "Firestore",
+    "pluginVersion": "0.2.4",
+    "pluginEngineVersion": "1.0.0"
+  },
+  "applicationInformation": {
+    "version": "8.10.0"
+  },
+  "hackoladeMeta": {},
+  "settings": {
+    "centralPane": {
+      "dbLevel": {
+        "erd": [
+          {
+            "GUID": "4d88c2cc-b6f2-4e92-a82e-96e078d72879",
+            "x": 944.675621212272,
+            "y": 1079.9449989551108,
+            "width": 254,
+            "height": 177,
+            "color": {}
+          },
+          {
+            "GUID": "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c",
+            "x": 933.2356128531497,
+            "y": 1273.2768810516557,
+            "width": 253,
+            "height": 321,
+            "color": {}
+          },
+          {
+            "GUID": "325f2905-0aae-45f7-8233-db831ede5cf8",
+            "x": 1270.218730408305,
+            "y": 1081.561001701681,
+            "width": 204,
+            "height": 152.95140264108517,
+            "color": {}
+          },
+          {
+            "GUID": "69ecd016-12ea-4741-bc48-7fb8a8d14118",
+            "x": 1268.578749912925,
+            "y": 1266.381255659823,
+            "width": 219.94687478231447,
+            "height": 162.63187513061132,
+            "color": {}
+          }
+        ],
+        "erdDefinitions": {
+          "erd": [],
+          "rootPath": [],
+          "entities": [],
+          "decorativeSymbols": []
+        },
+        "buckets": [
+          {
+            "x": 869.2356128531497,
+            "y": 1015.9449989551108,
+            "GUID": "1df3198f-3e71-4271-a1c2-d0bc42413172"
+          }
+        ],
+        "collapsedNodes": [],
+        "activeRelationship": "",
+        "activeRelationshipFields": {
+          "childField": [],
+          "parentField": []
+        },
+        "selectedCollections": [],
+        "displayColorPicker": false,
+        "graphView": {
+          "erd": [],
+          "buckets": [],
+          "decorativeSymbols": [],
+          "forceLayout": true,
+          "defaultLinkLength": 300
+        },
+        "diagramViews": [],
+        "decorativeSymbols": [],
+        "nestedCollectionsLayout": "horizontal",
+        "options": [
+          {
+            "autoWidth": false,
+            "autoHeight": false,
+            "GUID": "325f2905-0aae-45f7-8233-db831ede5cf8"
+          },
+          {
+            "autoWidth": false,
+            "autoHeight": false,
+            "GUID": "69ecd016-12ea-4741-bc48-7fb8a8d14118"
+          }
+        ],
+        "relationshipUpdateDisabled": false
+      },
+      "collectionLevel": {},
+      "changed": false
+    },
+    "dtDiagram": {
+      "collapsedNodes": [],
+      "shouldDistributeCollections": false
+    }
+  }
+}
