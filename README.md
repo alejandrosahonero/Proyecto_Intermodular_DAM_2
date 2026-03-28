@@ -51,6 +51,15 @@ Para el desarrollo de la interfaz se han seguido los lineamientos de **Material 
 
 ---
 
+## Modelo de Datos 
+# Cloud Firestore
+
+El sistema utiliza una base de datos NoSQL orientada a documentos, optimizada para consultas de alta disponibilidad y persistencia híbrida.
+
+![Esquema de Base de Datos](design/database/firestore_schema.png)
+
+---
+
 ## Planificación (50 Horas)
 
 | Semana | Actividad Principal | Hito Técnico |
