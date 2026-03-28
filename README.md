@@ -58,6 +58,15 @@ El sistema utiliza una base de datos NoSQL orientada a documentos, optimizada pa
 
 ![Esquema de Base de Datos](design/database/firestore_schema.png)
 
+# SQLite - Room
+
+Para garantizar la disponibilidad offline de datos críticos y la integridad referencial en el dispositivo, se ha diseñado un modelo relacional normalizado que será implementado mediante la librería Room.
+
+![Esquema SQLite](design/database/sqlite_schema.png)
+
+> [!NOTE]
+> A diferencia del modelo de Firestore, aquí se aplica una normalización estricta (Eliminación de redundancias) para asegurar la consistencia interna del almacenamiento local.
+
 ---
 
 ## Planificación (50 Horas)
