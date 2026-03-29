@@ -83,12 +83,30 @@
           "error": {}
         },
         {
-          "name": "disabledreason",
+          "name": "disabledReason",
           "hackoladeMeta": {},
           "isActivated": true,
           "primaryKey": false,
           "type": "string",
           "GUID": "8e8a05a2-11f8-45a2-9041-4ae5930ca73c",
+          "error": {}
+        },
+        {
+          "name": "disabledFrom",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "88fb3878-7ca5-4642-97f9-0882f259ab30",
+          "error": {}
+        },
+        {
+          "name": "disabledUntil",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "ff6fa948-9ab6-47e2-9340-475b99e5b0f8",
           "error": {}
         }
       ],
@@ -271,6 +289,24 @@
           "type": "timestamp",
           "error": {},
           "GUID": "0c9decd8-48dd-4f01-808d-952ae7d394b9"
+        },
+        {
+          "name": "cancellationReason",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "4d75ce68-5933-452e-965e-b66583acd351",
+          "error": {}
+        },
+        {
+          "name": "cancelledAt",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "6a501e94-9fe9-4b74-abf8-cff441f534ec",
+          "error": {}
         }
       ],
       "definitions": {
@@ -323,15 +359,6 @@
           "primaryKey": false,
           "type": "string",
           "GUID": "26dfbcc7-d37f-4df9-a2e4-316225472e2a",
-          "error": {}
-        },
-        {
-          "name": "last_name",
-          "hackoladeMeta": {},
-          "isActivated": true,
-          "primaryKey": false,
-          "type": "string",
-          "GUID": "23088eb3-a2ef-4a22-9f9a-b4ee21a389a6",
           "error": {}
         },
         {
@@ -515,7 +542,6 @@
     "782f70a1-2f54-4414-bff4-e15e100af80a": "totalPrice",
     "325f2905-0aae-45f7-8233-db831ede5cf8": "users",
     "38178cad-d0e2-4cd6-a243-7d0daccd1d5a": "name",
-    "23088eb3-a2ef-4a22-9f9a-b4ee21a389a6": "last_name",
     "857ff910-8c8e-4793-a54d-20a6e9b91620": "role",
     "9fe2db66-b676-4b59-a903-e9c05838403c": "uid",
     "26dfbcc7-d37f-4df9-a2e4-316225472e2a": "email",
@@ -534,7 +560,7 @@
     "9f3b3962-6837-46ec-a63a-72f2d653f5ec": "userName",
     "0c9decd8-48dd-4f01-808d-952ae7d394b9": "scannedAt",
     "dda4b505-8713-4152-98fa-22cb20a1aacf": "imageUrl",
-    "8e8a05a2-11f8-45a2-9041-4ae5930ca73c": "disabledreason",
+    "8e8a05a2-11f8-45a2-9041-4ae5930ca73c": "disabledReason",
     "20f95170-750a-4375-8bbd-9e4d5ec80fa4": "id",
     "69ecd016-12ea-4741-bc48-7fb8a8d14118": "notifications",
     "37e716bd-a588-467f-8e2a-b6003c068865": "userId",
@@ -542,7 +568,11 @@
     "40de3052-c54e-4a0d-8842-7c629a2b2ce5": "body",
     "b0379176-c3c1-47c2-8f22-bbd7c1d259d8": "type",
     "271884dc-e1e3-4fee-a2f7-967ca65b05ea": "isRead",
-    "4764a79e-faf0-4e02-b146-379e2f3ded08": "createdAt"
+    "4764a79e-faf0-4e02-b146-379e2f3ded08": "createdAt",
+    "88fb3878-7ca5-4642-97f9-0882f259ab30": "disabledFrom",
+    "ff6fa948-9ab6-47e2-9340-475b99e5b0f8": "disabledUntil",
+    "4d75ce68-5933-452e-965e-b66583acd351": "cancellationReason",
+    "6a501e94-9fe9-4b74-abf8-cff441f534ec": "cancelledAt"
   },
   "definitions": {
     "type": "definitions",
@@ -566,7 +596,7 @@
   "creationTS": "2026-03-15T01:04:33.754Z",
   "GUID": "e82b0d00-8073-4700-b1b3-d9fd1fba8c83",
   "isLineageEnabled": false,
-  "lastModifTS": "2026-03-28T13:26:38.012Z",
+  "lastModifTS": "2026-03-29T01:29:06.023Z",
   "persistenceSchemaVersion": "8",
   "isCreatedByPlugin": true,
   "pluginInformation": {
@@ -584,32 +614,32 @@
         "erd": [
           {
             "GUID": "4d88c2cc-b6f2-4e92-a82e-96e078d72879",
-            "x": 944.675621212272,
-            "y": 1079.9449989551108,
-            "width": 254,
-            "height": 177,
+            "x": 1218.6756212122718,
+            "y": 1234.9449989551108,
+            "width": 257,
+            "height": 213,
             "color": {}
           },
           {
             "GUID": "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c",
-            "x": 933.2356128531497,
-            "y": 1273.2768810516557,
-            "width": 253,
-            "height": 321,
+            "x": 910.2356128531497,
+            "y": 1236.2768810516557,
+            "width": 276,
+            "height": 357,
             "color": {}
           },
           {
             "GUID": "325f2905-0aae-45f7-8233-db831ede5cf8",
-            "x": 1270.218730408305,
-            "y": 1081.561001701681,
+            "x": 982.218730408305,
+            "y": 1053.561001701681,
             "width": 204,
             "height": 152.95140264108517,
             "color": {}
           },
           {
             "GUID": "69ecd016-12ea-4741-bc48-7fb8a8d14118",
-            "x": 1268.578749912925,
-            "y": 1266.381255659823,
+            "x": 1219.578749912925,
+            "y": 1053.381255659823,
             "width": 219.94687478231447,
             "height": 162.63187513061132,
             "color": {}
@@ -623,8 +653,8 @@
         },
         "buckets": [
           {
-            "x": 869.2356128531497,
-            "y": 1015.9449989551108,
+            "x": 846.2356128531497,
+            "y": 989.381255659823,
             "GUID": "1df3198f-3e71-4271-a1c2-d0bc42413172"
           }
         ],

@@ -12,6 +12,7 @@ Table users {
 
 Table courts {
   id integer [primary key]
+  court_id_firebase varchar
   name varchar
   type varchar
   price_per_hour float
@@ -19,12 +20,14 @@ Table courts {
   description text
   image_url varchar
   disabled_reason text
+  disabled_from timestamp
+  disabled_until timestamp
 }
 
 Table reservations {
   id integer [primary key]
-  user_id integer [not null]
-  court_id integer [not null]
+  user_id varchar [not null]
+  court_id varchar [not null]
   date date [note: 'Formato YYYY-MM-DD']
   start_time time [note: 'HH:mm']
   end_time time
