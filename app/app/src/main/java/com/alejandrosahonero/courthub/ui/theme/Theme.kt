@@ -1,4 +1,4 @@
-package com.alejandrosahonero.sportcourtsmanagement.ui.theme
+package com.alejandrosahonero.courthub.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -34,7 +34,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun SportCourtsManagementTheme(
+fun CourtHubTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

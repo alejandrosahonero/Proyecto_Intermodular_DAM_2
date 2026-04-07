@@ -1,4 +1,4 @@
-package com.alejandrosahonero.sportcourtsmanagement
+package com.alejandrosahonero.courthub
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.alejandrosahonero.sportcourtsmanagement", appContext.packageName)
+        assertEquals("com.alejandrosahonero.courthub", appContext.packageName)
     }
 }

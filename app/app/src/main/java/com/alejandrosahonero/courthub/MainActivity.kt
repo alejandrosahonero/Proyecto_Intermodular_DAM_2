@@ -1,4 +1,4 @@
-package com.alejandrosahonero.sportcourtsmanagement
+package com.alejandrosahonero.courthub
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,14 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.alejandrosahonero.sportcourtsmanagement.ui.theme.SportCourtsManagementTheme
+import com.alejandrosahonero.courthub.ui.theme.CourtHubTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SportCourtsManagementTheme {
+            CourtHubTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
@@ -41,7 +41,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    SportCourtsManagementTheme {
+    CourtHubTheme {
         Greeting("Android")
     }
 }

@@ -1,4 +1,4 @@
-package com.alejandrosahonero.sportcourtsmanagement.ui.theme
+package com.alejandrosahonero.courthub.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

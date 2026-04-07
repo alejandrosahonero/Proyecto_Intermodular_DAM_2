@@ -1,4 +1,4 @@
-package com.alejandrosahonero.sportcourtsmanagement
+package com.alejandrosahonero.courthub
 
 import org.junit.Test
 

@@ -22,5 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Sport Courts Management"
+rootProject.name = "CourtHub"
 include(":app")
+ 
