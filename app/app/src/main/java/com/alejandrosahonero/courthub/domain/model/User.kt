@@ -3,7 +3,6 @@ package com.alejandrosahonero.courthub.domain.model
 data class User(
     val uid: String = "",
     val name: String = "",
-    val lastName: String = "",
     val email: String = "",
     val role: UserRole = UserRole.CLIENT,
     val fcmToken: String = "",

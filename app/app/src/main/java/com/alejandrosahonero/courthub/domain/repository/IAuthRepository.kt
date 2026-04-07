@@ -11,7 +11,6 @@ interface IAuthRepository {
 
     suspend fun register(
         name: String,
-        lastName: String,
         email: String,
         password: String
     ): Result<User>
