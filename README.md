@@ -42,7 +42,7 @@ Para el desarrollo de la interfaz se han seguido los lineamientos de **Material 
 
 | Interfaz de Usuario (Cliente) | Módulo de Administración (Puerta) |
 | :---: | :---: |
-| ![Home de Usuario](mockups/design/customer_home.png) | ![Home de Administrador](mockups/design/admin_home.png) |
+| ![Home de Usuario](design/mockups/customer_home.png) | ![Home de Administrador](design/mockups/admin_home.png) |
 | *Dashboard principal el usuario* | *Dashboard principal para el administrador* |
 
 > [!TIP]
