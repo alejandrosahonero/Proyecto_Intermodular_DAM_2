@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
@@ -38,6 +39,17 @@ android {
     buildFeatures {
         compose = true
     }
+    sourceSets {
+        getByName("main") {
+            java.directories.add("build/generated/ksp/main/kotlin")
+        }
+        getByName("debug") {
+            java.directories.add("build/generated/ksp/debug/kotlin")
+        }
+        getByName("release") {
+            java.directories.add("build/generated/ksp/release/kotlin")
+        }
+    }
 }
 
 dependencies {
@@ -65,4 +77,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 }
