@@ -1,6 +1,8 @@
 package com.alejandrosahonero.courthub.data.local.mapper
 
+import android.R.attr.name
 import com.alejandrosahonero.courthub.data.model.firestore.CourtDto
+import com.alejandrosahonero.courthub.data.model.local.CourtEntity
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.model.CourtType
 
@@ -31,4 +33,30 @@ fun Court.toDto(): CourtDto = CourtDto(
     disabledUntil = disabledUntil?.let {
         com.google.firebase.Timestamp(java.util.Date(it))
     }
+)
+
+fun CourtEntity.toDomain(): Court = Court(
+    id = courtIdFirebase,
+    name = name,
+    type = CourtType.fromString(type),
+    pricePerHour = pricePerHour,
+    isEnabled = isEnabled,
+    description = description,
+    imageUrl = imageUrl,
+    disabledReason = disabledReason,
+    disabledFrom = disabledFrom,
+    disabledUntil = disabledUntil
+)
+
+fun Court.toEntity(): CourtEntity = CourtEntity(
+    courtIdFirebase = id,
+    name = name,
+    type = type.value,
+    pricePerHour = pricePerHour,
+    isEnabled = isEnabled,
+    description = description,
+    imageUrl = imageUrl,
+    disabledReason = disabledReason,
+    disabledFrom = disabledFrom,
+    disabledUntil = disabledUntil
 )
