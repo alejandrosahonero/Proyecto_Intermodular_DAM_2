@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
+import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
+import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
 
 @Composable
 fun NavGraph() {
@@ -27,11 +29,10 @@ fun NavGraph() {
 
         // ── Auth ──────────────────────────────────────────────────────────────
         composable(Screen.Login.route) {
-            // LoginScreen(navController, app.container) — próximo paso
-            PlaceholderScreen("Login")
+            LoginScreen(navController = navController)
         }
         composable(Screen.Register.route) {
-            PlaceholderScreen("Register")
+            RegisterScreen(navController = navController)
         }
 
         // ── Client ────────────────────────────────────────────────────────────
