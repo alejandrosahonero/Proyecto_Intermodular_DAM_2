@@ -1,0 +1,101 @@
+package com.alejandrosahonero.courthub.ui.navigation
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.alejandrosahonero.courthub.CourtHubApp
+
+@Composable
+fun NavGraph() {
+    val navController = rememberNavController()
+    val app = LocalContext.current.applicationContext as CourtHubApp
+
+    // Punto de inicio: Login. Cuando implementemos auth persistente
+    // esto cambiará para detectar si ya hay sesión activa.
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Login.route
+    ) {
+
+        // ── Auth ──────────────────────────────────────────────────────────────
+        composable(Screen.Login.route) {
+            // LoginScreen(navController, app.container) — próximo paso
+            PlaceholderScreen("Login")
+        }
+        composable(Screen.Register.route) {
+            PlaceholderScreen("Register")
+        }
+
+        // ── Client ────────────────────────────────────────────────────────────
+        composable(Screen.ClientHome.route) {
+            PlaceholderScreen("Client Home")
+        }
+        composable(Screen.ClientReservations.route) {
+            PlaceholderScreen("Mis Reservas")
+        }
+        composable(Screen.ClientNotifications.route) {
+            PlaceholderScreen("Notificaciones")
+        }
+        composable(Screen.ClientProfile.route) {
+            PlaceholderScreen("Perfil")
+        }
+        composable(Screen.CourtDetail.route) { backStackEntry ->
+            val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
+            PlaceholderScreen("Court Detail: $courtId")
+        }
+        composable(Screen.ReservationStep.route) { backStackEntry ->
+            val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
+            PlaceholderScreen("Reservation Step: $courtId")
+        }
+        composable(Screen.Payment.route) { backStackEntry ->
+            val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
+            val date = backStackEntry.arguments?.getString("date") ?: ""
+            val startTime = backStackEntry.arguments?.getString("startTime") ?: ""
+            PlaceholderScreen("Payment: $courtId $date $startTime")
+        }
+
+        // ── Admin ─────────────────────────────────────────────────────────────
+        composable(Screen.AdminHome.route) {
+            PlaceholderScreen("Admin Home")
+        }
+        composable(Screen.AdminCourts.route) {
+            PlaceholderScreen("Admin Pistas")
+        }
+        composable(Screen.AdminReservations.route) {
+            PlaceholderScreen("Admin Reservas")
+        }
+        composable(Screen.AdminScanner.route) {
+            PlaceholderScreen("Admin Scanner")
+        }
+        composable(Screen.AdminUsers.route) {
+            PlaceholderScreen("Admin Usuarios")
+        }
+        composable(Screen.AdminNotifications.route) {
+            PlaceholderScreen("Admin Notificaciones")
+        }
+        composable(Screen.AdminProfile.route) {
+            PlaceholderScreen("Admin Perfil")
+        }
+    }
+}
+
+@Composable
+private fun PlaceholderScreen(name: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.headlineMedium
+        )
+    }
+}
