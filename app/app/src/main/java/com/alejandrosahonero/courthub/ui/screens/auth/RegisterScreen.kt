@@ -11,18 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -77,13 +75,10 @@ fun RegisterScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    // Tras registro exitoso navegamos al home del cliente
     LaunchedEffect(uiState.loggedUser) {
         uiState.loggedUser?.let { user ->
             val destination = if (user.role == UserRole.ADMIN)
-                Screen.AdminHome.route
-            else
-                Screen.ClientHome.route
+                Screen.AdminHome.route else Screen.ClientHome.route
             navController.navigate(destination) {
                 popUpTo(Screen.Register.route) { inclusive = true }
             }
@@ -91,8 +86,8 @@ fun RegisterScreen(navController: NavController) {
     }
 
     LaunchedEffect(uiState.error) {
-        uiState.error?.let { error ->
-            scope.launch { snackbarHostState.showSnackbar(error) }
+        uiState.error?.let {
+            scope.launch { snackbarHostState.showSnackbar(it) }
             viewModel.clearError()
         }
     }
@@ -101,72 +96,56 @@ fun RegisterScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(72.dp))
-
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = "CourtHub logo",
-                tint = Red600,
-                modifier = Modifier.size(56.dp)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
             Text(
                 text = "Crear cuenta",
                 style = MaterialTheme.typography.headlineMedium
             )
-            Text(
-                text = "Regístrate para reservar tus pistas deportivas",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Spacer(modifier = Modifier.height(6.dp))
+            HorizontalDivider(
+                color = Red600,
+                thickness = 2.dp,
+                modifier = Modifier.width(40.dp)
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Nombre
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Nombre completo *") },
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = TextHint)
-                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = authTextFieldColors()
+                colors = loginTextFieldColors(),
+                shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Correo Electrónico *") },
-                leadingIcon = {
-                    Icon(Icons.Default.MailOutline, contentDescription = null, tint = TextHint)
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = authTextFieldColors()
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = loginTextFieldColors(),
+                shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña *") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = TextHint)
-                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (passwordVisible)
+                    VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -177,24 +156,21 @@ fun RegisterScreen(navController: NavController) {
                         )
                     }
                 },
-                visualTransformation = if (passwordVisible)
-                    VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = authTextFieldColors()
+                colors = loginTextFieldColors(),
+                shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Confirmar contraseña
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirmar contraseña *") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null, tint = TextHint)
-                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (confirmPasswordVisible)
+                    VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(
@@ -205,25 +181,19 @@ fun RegisterScreen(navController: NavController) {
                         )
                     }
                 },
-                visualTransformation = if (confirmPasswordVisible)
-                    VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = authTextFieldColors()
+                colors = loginTextFieldColors(),
+                shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Botón registrarse
             Button(
-                onClick = {
-                    viewModel.register(name, email, password, confirmPassword)
-                },
+                onClick = { viewModel.register(name, email, password, confirmPassword) },
                 enabled = !uiState.isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
+                shape = RoundedCornerShape(26.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Red600)
             ) {
                 if (uiState.isLoading) {
@@ -237,9 +207,19 @@ fun RegisterScreen(navController: NavController) {
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            GoogleSignInButton(
+                text = "Registrarse con Google",
+                onClick = { }
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(horizontalArrangement = Arrangement.Center) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Text(
                     text = "¿Ya tienes cuenta? ",
                     style = MaterialTheme.typography.bodyMedium,
@@ -252,8 +232,6 @@ fun RegisterScreen(navController: NavController) {
                     modifier = Modifier.clickable { navController.popBackStack() }
                 )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
 
         SnackbarHost(
