@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
+import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
 
 @Composable
 fun NavGraph() {
@@ -37,7 +38,7 @@ fun NavGraph() {
 
         // ── Client ────────────────────────────────────────────────────────────
         composable(Screen.ClientHome.route) {
-            PlaceholderScreen("Client Home")
+            ClientHomeScreen(navController = navController)
         }
         composable(Screen.ClientReservations.route) {
             PlaceholderScreen("Mis Reservas")
