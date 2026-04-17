@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
+import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
 
 @Composable
@@ -51,7 +52,7 @@ fun NavGraph() {
         }
         composable(Screen.CourtDetail.route) { backStackEntry ->
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
-            PlaceholderScreen("Court Detail: $courtId")
+            CourtDetailScreen(courtId = courtId, navController = navController)
         }
         composable(Screen.ReservationStep.route) { backStackEntry ->
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
