@@ -15,6 +15,7 @@ import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.ui.screens.admin.courts.AdminCourtsScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.home.AdminHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.reservations.AdminReservationsScreen
+import com.alejandrosahonero.courthub.ui.screens.admin.scanner.AdminScannerScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
 import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
@@ -83,7 +84,7 @@ fun NavGraph() {
             AdminReservationsScreen(navController = navController)
         }
         composable(Screen.AdminScanner.route) {
-            PlaceholderScreen("Admin Scanner")
+            AdminScannerScreen(navController = navController)
         }
         composable(Screen.AdminUsers.route) {
             PlaceholderScreen("Admin Usuarios")
