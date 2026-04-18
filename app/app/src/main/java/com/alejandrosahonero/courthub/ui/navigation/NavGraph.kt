@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
+import com.alejandrosahonero.courthub.ui.screens.admin.courts.AdminCourtsScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.home.AdminHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
@@ -75,7 +76,7 @@ fun NavGraph() {
             AdminHomeScreen(navController = navController)
         }
         composable(Screen.AdminCourts.route) {
-            PlaceholderScreen("Admin Pistas")
+            AdminCourtsScreen(navController = navController)
         }
         composable(Screen.AdminReservations.route) {
             PlaceholderScreen("Admin Reservas")
