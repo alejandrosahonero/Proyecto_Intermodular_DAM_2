@@ -16,6 +16,7 @@ import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
 import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
+import com.alejandrosahonero.courthub.ui.screens.client.notifications.NotificationsScreen
 import com.alejandrosahonero.courthub.ui.screens.client.payment.PaymentScreen
 import com.alejandrosahonero.courthub.ui.screens.client.reservations.ReservationsScreen
 
@@ -47,7 +48,7 @@ fun NavGraph() {
             ReservationsScreen(navController = navController)
         }
         composable(Screen.ClientNotifications.route) {
-            PlaceholderScreen("Notificaciones")
+            NotificationsScreen(navController = navController)
         }
         composable(Screen.ClientProfile.route) {
             PlaceholderScreen("Perfil")
