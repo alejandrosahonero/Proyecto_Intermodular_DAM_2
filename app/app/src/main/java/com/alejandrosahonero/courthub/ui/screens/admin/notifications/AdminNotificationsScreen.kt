@@ -1,4 +1,4 @@
-package com.alejandrosahonero.courthub.ui.screens.client.notifications
+package com.alejandrosahonero.courthub.ui.screens.admin.notifications
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,13 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
-import com.alejandrosahonero.courthub.ui.screens.client.ClientScaffold
+import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
+import com.alejandrosahonero.courthub.ui.screens.client.notifications.NotificationsViewModel
 import com.alejandrosahonero.courthub.ui.screens.shared.NotificationItem
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 
+// ui/screens/admin/notifications/AdminNotificationsScreen.kt
 @Composable
-fun NotificationsScreen(navController: NavController) {
+fun AdminNotificationsScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: NotificationsViewModel = viewModel(
         factory = NotificationsViewModel.factory(
@@ -46,7 +48,7 @@ fun NotificationsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(navController = navController) { contentModifier ->
         Column(modifier = contentModifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -62,8 +64,7 @@ fun NotificationsScreen(navController: NavController) {
                     if (uiState.unreadCount > 0) {
                         Text(
                             "${uiState.unreadCount} sin leer",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextHint
+                            style = MaterialTheme.typography.bodySmall, color = TextHint
                         )
                     }
                 }
@@ -87,10 +88,8 @@ fun NotificationsScreen(navController: NavController) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null,
-                            tint = TextHint,
-                            modifier = Modifier.size(48.dp)
+                            Icons.Default.Notifications, contentDescription = null,
+                            tint = TextHint, modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

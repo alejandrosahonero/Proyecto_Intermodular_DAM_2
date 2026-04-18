@@ -1,4 +1,4 @@
-package com.alejandrosahonero.courthub.ui.screens.client.profile
+package com.alejandrosahonero.courthub.ui.screens.admin.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -43,9 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
-import com.alejandrosahonero.courthub.domain.model.UserRole
 import com.alejandrosahonero.courthub.ui.navigation.Screen
-import com.alejandrosahonero.courthub.ui.screens.client.ClientScaffold
+import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
+import com.alejandrosahonero.courthub.ui.screens.client.profile.ProfileViewModel
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileActionItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileSection
@@ -56,7 +55,7 @@ import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun AdminProfileScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModel.factory(
@@ -67,15 +66,15 @@ fun ProfileScreen(navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(navController = navController) { contentModifier ->
         if (uiState.isLoading) {
             Box(modifier = contentModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Red600)
             }
-            return@ClientScaffold
+            return@AdminScaffold
         }
 
-        val user = uiState.user ?: return@ClientScaffold
+        val user = uiState.user ?: return@AdminScaffold
 
         Column(
             modifier = contentModifier
@@ -84,7 +83,6 @@ fun ProfileScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Avatar + nombre + rol
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -109,31 +107,24 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(user.name, style = MaterialTheme.typography.titleLarge)
                 Text(
-                    text = if (user.role == UserRole.ADMIN) "Administrador" else "Cliente",
+                    "Administrador",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextHint
+                    color = Red600
                 )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Sección Información de Cuenta
             ProfileSection(title = "Información de Cuenta") {
                 ProfileItem(
                     icon = Icons.Default.MailOutline,
                     label = "Correo",
                     value = user.email
                 )
-                ProfileItem(
-                    icon = Icons.Default.Phone,
-                    label = "Teléfono",
-                    value = "+34 —"
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sección Configuración
             ProfileSection(title = "Configuración") {
                 ProfileActionItem(
                     icon = Icons.Default.Notifications,
@@ -149,20 +140,8 @@ fun ProfileScreen(navController: NavController) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sección Contactar Soporte
-            ProfileSection(title = "Contactar Soporte") {
-                ProfileItem(
-                    icon = Icons.Default.Phone,
-                    label = "Teléfono de Soporte",
-                    value = "+34 900 123 456"
-                )
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón cerrar sesión
             Button(
                 onClick = { showLogoutDialog = true },
                 modifier = Modifier
@@ -176,8 +155,7 @@ fun ProfileScreen(navController: NavController) {
                 )
             ) {
                 Icon(
-                    Icons.Default.Logout,
-                    contentDescription = null,
+                    Icons.Default.Logout, contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -207,9 +185,7 @@ fun ProfileScreen(navController: NavController) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
-                }) {
-                    Text("Cerrar sesión", color = Error)
-                }
+                }) { Text("Cerrar sesión", color = Error) }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
