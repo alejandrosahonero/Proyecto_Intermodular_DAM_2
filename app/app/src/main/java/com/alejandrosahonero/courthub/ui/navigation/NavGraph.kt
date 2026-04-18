@@ -16,6 +16,7 @@ import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
 import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
+import com.alejandrosahonero.courthub.ui.screens.client.payment.PaymentScreen
 
 @Composable
 fun NavGraph() {
@@ -62,7 +63,7 @@ fun NavGraph() {
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
             val date = backStackEntry.arguments?.getString("date") ?: ""
             val startTime = backStackEntry.arguments?.getString("startTime") ?: ""
-            PlaceholderScreen("Payment: $courtId $date $startTime")
+            PaymentScreen(courtId, date, startTime, navController)
         }
 
         // ── Admin ─────────────────────────────────────────────────────────────
