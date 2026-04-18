@@ -27,7 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class AppContainer(context: Context) {
 
     // ── Firebase ──────────────────────────────────────────────────────────────
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
     // ── Room ──────────────────────────────────────────────────────────────────
