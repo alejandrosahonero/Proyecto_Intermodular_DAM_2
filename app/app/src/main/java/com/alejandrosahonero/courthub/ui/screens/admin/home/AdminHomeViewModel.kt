@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus
+import com.alejandrosahonero.courthub.domain.model.User
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,11 +22,13 @@ data class AdminHomeUiState(
     val revenueToday: Double = 0.0,
     val revenueWeek: Double = 0.0,
     val recentReservations: List<Reservation> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val currentUser: User? = null
 )
 
 class AdminHomeViewModel(
-    private val reservationRepository: IReservationRepository
+    private val reservationRepository: IReservationRepository,
+    private val authRepository: IAuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminHomeUiState())
@@ -32,6 +36,10 @@ class AdminHomeViewModel(
 
     init {
         loadStats()
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser()
+            _uiState.update { it.copy(currentUser = user) }
+        }
     }
 
     private fun loadStats() {
@@ -59,11 +67,13 @@ class AdminHomeViewModel(
     }
 
     companion object {
-        fun factory(reservationRepository: IReservationRepository) =
-            object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                    AdminHomeViewModel(reservationRepository) as T
-            }
+        fun factory(
+            reservationRepository: IReservationRepository,
+            authRepository: IAuthRepository
+        ) = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                AdminHomeViewModel(reservationRepository, authRepository) as T
+        }
     }
 }

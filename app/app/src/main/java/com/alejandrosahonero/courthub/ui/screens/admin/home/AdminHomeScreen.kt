@@ -1,5 +1,7 @@
 package com.alejandrosahonero.courthub.ui.screens.admin.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -30,6 +33,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +43,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.domain.model.Reservation
+import com.alejandrosahonero.courthub.ui.navigation.Screen
 import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
 import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
@@ -48,7 +54,10 @@ import com.alejandrosahonero.courthub.ui.theme.TextHint
 fun AdminHomeScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: AdminHomeViewModel = viewModel(
-        factory = AdminHomeViewModel.factory(app.container.reservationRepository)
+        factory = AdminHomeViewModel.factory(
+            app.container.reservationRepository,
+            app.container.authRepository
+        )
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -67,7 +76,44 @@ fun AdminHomeScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Panel de Administración", style = MaterialTheme.typography.headlineMedium)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        "Panel de Administración",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        "Bienvenido, ${uiState.currentUser?.name?.split(" ")?.firstOrNull() ?: ""}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Red600)
+                        .clickable { navController.navigate(Screen.AdminProfile.route) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = uiState.currentUser?.name
+                            ?.split(" ")
+                            ?.mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                            ?.take(2)
+                            ?.joinToString("") ?: "?",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.White
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Fila KPIs pequeños
