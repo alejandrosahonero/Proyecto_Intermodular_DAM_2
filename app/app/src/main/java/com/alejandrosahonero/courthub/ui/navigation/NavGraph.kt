@@ -18,6 +18,7 @@ import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.client.notifications.NotificationsScreen
 import com.alejandrosahonero.courthub.ui.screens.client.payment.PaymentScreen
+import com.alejandrosahonero.courthub.ui.screens.client.profile.ProfileScreen
 import com.alejandrosahonero.courthub.ui.screens.client.reservations.ReservationsScreen
 
 @Composable
@@ -51,7 +52,7 @@ fun NavGraph() {
             NotificationsScreen(navController = navController)
         }
         composable(Screen.ClientProfile.route) {
-            PlaceholderScreen("Perfil")
+            ProfileScreen(navController = navController)
         }
         composable(Screen.CourtDetail.route) { backStackEntry ->
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
