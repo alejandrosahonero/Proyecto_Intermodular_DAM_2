@@ -69,6 +69,7 @@ import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
+import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -219,7 +220,7 @@ private fun AdminCourtCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "$${court.pricePerHour.toInt()}/hora",
+                    "${court.pricePerHour.toPriceString()}/hora",
                     style = MaterialTheme.typography.titleSmall,
                     color = Red600
                 )

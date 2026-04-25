@@ -53,6 +53,7 @@ import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.toInitials
 
 @Composable
 fun AdminProfileScreen(navController: NavController) {
@@ -95,11 +96,7 @@ fun AdminProfileScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = user.name
-                            .split(" ")
-                            .mapNotNull { it.firstOrNull()?.uppercaseChar() }
-                            .take(2)
-                            .joinToString(""),
+                        text = user.name.toInitials(),
                         style = MaterialTheme.typography.headlineSmall,
                         color = Color.White
                     )

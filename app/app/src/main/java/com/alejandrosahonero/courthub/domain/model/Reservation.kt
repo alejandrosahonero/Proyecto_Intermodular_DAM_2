@@ -1,5 +1,6 @@
 package com.alejandrosahonero.courthub.domain.model
 
+import com.alejandrosahonero.courthub.utils.Constants
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -40,7 +41,7 @@ data class Reservation(
             )
             val now = ZonedDateTime.now(ZoneId.systemDefault())
             val hoursUntilStart = java.time.Duration.between(now, reservationStart).toHours()
-            hoursUntilStart > 24
+            hoursUntilStart > Constants.CANCELLATION_HOURS_LIMIT
         } catch (e: Exception) {
             false
         }

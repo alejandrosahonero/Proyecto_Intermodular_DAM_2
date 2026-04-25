@@ -53,6 +53,7 @@ import com.alejandrosahonero.courthub.ui.theme.Success
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.toPriceString
 
 @Composable
 fun AdminReservationsScreen(navController: NavController) {
@@ -230,7 +231,7 @@ private fun AdminReservationCard(reservation: Reservation) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                "$${reservation.totalPrice.toInt()}",
+                reservation.totalPrice.toPriceString(),
                 style = MaterialTheme.typography.titleMedium,
                 color = Red600
             )

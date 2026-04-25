@@ -57,6 +57,8 @@ import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.toInitials
+import com.alejandrosahonero.courthub.utils.toPriceString
 
 @Composable
 fun ClientHomeScreen(navController: NavController) {
@@ -110,11 +112,7 @@ fun ClientHomeScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = uiState.currentUser?.name
-                            ?.split(" ")
-                            ?.mapNotNull { it.firstOrNull()?.uppercaseChar() }
-                            ?.take(2)
-                            ?.joinToString("") ?: "?",
+                        text = uiState.currentUser?.name?.toInitials() ?: "?",
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White
                     )
@@ -269,7 +267,7 @@ private fun CourtCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$${court.pricePerHour.toInt()}/hora",
+                        text = "${court.pricePerHour.toPriceString()}/hora",
                         style = MaterialTheme.typography.titleMedium,
                         color = Red600
                     )

@@ -64,6 +64,7 @@ import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
+import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -143,7 +144,7 @@ fun CourtDetailScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "$${court.pricePerHour.toInt()}/hora",
+                text = "${court.pricePerHour.toPriceString()}/hora",
                 style = MaterialTheme.typography.titleLarge,
                 color = Red600,
                 fontWeight = FontWeight.Bold

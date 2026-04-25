@@ -65,6 +65,7 @@ import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
+import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 
 @Composable
@@ -226,7 +227,7 @@ private fun ReservationCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "$${reservation.totalPrice.toInt()}",
+                text = reservation.totalPrice.toPriceString(),
                 style = MaterialTheme.typography.titleMedium,
                 color = Red600
             )

@@ -58,6 +58,8 @@ import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.DateUtils
+import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 
 @Composable
@@ -128,9 +130,9 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                         text = uiState.court?.name ?: "",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    val endTime = startTime.split(":")[0].toInt() + 1
+                    val endTime = DateUtils.endTimeFromStart(startTime)
                     Text(
-                        text = "$date  •  $startTime - %02d:00".format(endTime),
+                        text = "$date  •  $startTime - $endTime",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -143,7 +145,7 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                     ) {
                         Text("Total", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            text = "$${uiState.court?.pricePerHour?.toInt() ?: 0}",
+                            text = (uiState.court?.pricePerHour ?: 0.0).toPriceString(),
                             style = MaterialTheme.typography.titleMedium,
                             color = Red600
                         )
@@ -255,7 +257,7 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                     )
                 } else {
                     Text(
-                        "Pagar $${uiState.court?.pricePerHour?.toInt() ?: 0}",
+                        "Pagar ${(uiState.court?.pricePerHour ?: 0.0).toPriceString()}",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
