@@ -8,6 +8,7 @@ import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.usecase.court.DisableCourtUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -15,7 +16,11 @@ data class AdminCourtsUiState(
     val courts: List<Court> = emptyList(),
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val courtToEdit: Court? = null,
+    val showDeleteDialog: Court? = null,
+    val courtToDisable: Court? = null,
+    val isRefreshing: Boolean = false
 )
 
 class AdminCourtsViewModel(
@@ -40,6 +45,79 @@ class AdminCourtsViewModel(
 
     fun onSearchQueryChange(query: String) = _uiState.update { it.copy(searchQuery = query) }
 
+    fun onEditCourt(court: Court) =
+        _uiState.update { it.copy(courtToEdit = court) }
+
+    fun onDismissEdit() =
+        _uiState.update { it.copy(courtToEdit = null) }
+
+    fun onDeleteRequest(court: Court) =
+        _uiState.update { it.copy(showDeleteDialog = court) }
+
+    fun onDismissDelete() =
+        _uiState.update { it.copy(showDeleteDialog = null) }
+
+    fun onDisableRequest(court: Court) =
+        _uiState.update { it.copy(courtToDisable = court) }
+
+    fun onDismissDisable() =
+        _uiState.update { it.copy(courtToDisable = null) }
+
+    fun updateCourt(court: Court) {
+        viewModelScope.launch {
+            courtRepository.updateCourt(court)
+                .onSuccess {
+                    _uiState.update { it.copy(courtToEdit = null) }
+                    refreshCourts()
+                }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    fun deleteCourt(courtId: String) {
+        viewModelScope.launch {
+            courtRepository.deleteCourt(courtId)
+                .onSuccess {
+                    _uiState.update { it.copy(showDeleteDialog = null) }
+                    refreshCourts()
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            error = e.message,
+                            showDeleteDialog = null
+                        )
+                    }
+                }
+        }
+    }
+
+    fun disableCourt(courtId: String, reason: String, from: Long, until: Long) {
+        viewModelScope.launch {
+            disableCourtUseCase(courtId, reason, from, until)
+                .onSuccess { refreshCourts() }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    fun enableCourt(courtId: String) {
+        viewModelScope.launch {
+            courtRepository.enableCourt(courtId)
+                .onSuccess { refreshCourts() }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    private fun refreshCourts() {
+        viewModelScope.launch {
+            courtRepository.getCourts()
+                .take(1)
+                .collect { courts ->
+                    _uiState.update { it.copy(courts = courts, isLoading = false) }
+                }
+        }
+    }
+
     fun filteredCourts(): List<Court> {
         val q = _uiState.value.searchQuery
         return _uiState.value.courts.filter {
@@ -48,21 +126,18 @@ class AdminCourtsViewModel(
         }
     }
 
-    fun disableCourt(courtId: String, reason: String, from: Long, until: Long) {
-        viewModelScope.launch {
-            disableCourtUseCase(courtId, reason, from, until)
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
-        }
-    }
-
-    fun enableCourt(courtId: String) {
-        viewModelScope.launch {
-            courtRepository.enableCourt(courtId)
-                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
-        }
-    }
-
     fun clearError() = _uiState.update { it.copy(error = null) }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            courtRepository.getCourts()
+                .take(1)
+                .collect { courts ->
+                    _uiState.update { it.copy(courts = courts, isRefreshing = false) }
+                }
+        }
+    }
 
     companion object {
         fun factory(

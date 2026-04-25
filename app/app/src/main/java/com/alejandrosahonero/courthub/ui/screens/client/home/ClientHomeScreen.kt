@@ -31,6 +31,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +76,8 @@ fun ClientHomeScreen(navController: NavController) {
     )
 
     val uiState by viewModel.uiState.collectAsState()
+
+    val pullToRefreshState = rememberPullToRefreshState()
 
     ClientScaffold(navController = navController) { contentModifier ->
         Column(
@@ -146,34 +151,48 @@ fun ClientHomeScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Lista de pistas ───────────────────────────────────────────────
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Red600)
-                }
-            } else if (uiState.filteredCourts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No se encontraron pistas",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextHint
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullToRefresh(
+                        state = pullToRefreshState,
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = { viewModel.refresh() }
                     )
-                }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(uiState.filteredCourts) { court ->
-                        CourtCard(
-                            court = court,
-                            onClick = {
-                                navController.navigate(
-                                    Screen.CourtDetail.createRoute(court.id)
-                                )
-                            }
+            ) {
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Red600)
+                    }
+                } else if (uiState.filteredCourts.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "No se encontraron pistas",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextHint
                         )
                     }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(uiState.filteredCourts) { court ->
+                            CourtCard(
+                                court = court,
+                                onClick = {
+                                    navController.navigate(Screen.CourtDetail.createRoute(court.id))
+                                }
+                            )
+                        }
+                    }
                 }
+                Indicator(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isRefreshing,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    color = Red600
+                )
             }
         }
     }

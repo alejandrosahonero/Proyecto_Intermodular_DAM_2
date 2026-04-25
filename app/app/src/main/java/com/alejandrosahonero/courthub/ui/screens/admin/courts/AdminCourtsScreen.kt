@@ -16,13 +16,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,6 +43,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +62,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -88,7 +97,7 @@ fun AdminCourtsScreen(navController: NavController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    var courtToDisable by remember { mutableStateOf<Court?>(null) }
+    val pullToRefreshState = rememberPullToRefreshState()
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -139,17 +148,35 @@ fun AdminCourtsScreen(navController: NavController) {
                         CircularProgressIndicator(color = Red600)
                     }
                 } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        items(viewModel.filteredCourts(), key = { it.id }) { court ->
-                            AdminCourtCard(
-                                court = court,
-                                onDisable = { courtToDisable = court },
-                                onEnable = { viewModel.enableCourt(court.id) }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pullToRefresh(
+                                state = pullToRefreshState,
+                                isRefreshing = uiState.isRefreshing,
+                                onRefresh = { viewModel.refresh() }
                             )
+                    ) {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            items(viewModel.filteredCourts(), key = { it.id }) { court ->
+                                AdminCourtCard(
+                                    court = court,
+                                    onDisable = { viewModel.onDisableRequest(court) },
+                                    onEnable = { viewModel.enableCourt(court.id) },
+                                    onEdit = { viewModel.onEditCourt(court) },
+                                    onDelete = { viewModel.onDeleteRequest(court) }
+                                )
+                            }
                         }
+                        Indicator(
+                            state = pullToRefreshState,
+                            isRefreshing = uiState.isRefreshing,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            color = Red600
+                        )
                     }
                 }
             }
@@ -161,13 +188,48 @@ fun AdminCourtsScreen(navController: NavController) {
         }
     }
 
-    courtToDisable?.let { court ->
+    // Disable sheet
+    uiState.courtToDisable?.let { court ->
         DisableCourtSheet(
             court = court,
-            onDismiss = { courtToDisable = null },
+            onDismiss = { viewModel.onDismissDisable() },
             onConfirm = { reason, from, until ->
                 viewModel.disableCourt(court.id, reason, from, until)
-                courtToDisable = null
+                viewModel.onDismissDisable()
+            }
+        )
+    }
+
+    // Edit sheet
+    uiState.courtToEdit?.let { court ->
+        EditCourtSheet(
+            court = court,
+            onDismiss = { viewModel.onDismissEdit() },
+            onConfirm = { updated -> viewModel.updateCourt(updated) }
+        )
+    }
+
+    // Delete dialog
+    uiState.showDeleteDialog?.let { court ->
+        AlertDialog(
+            onDismissRequest = { viewModel.onDismissDelete() },
+            containerColor = Surface,
+            title = { Text("Eliminar pista") },
+            text = {
+                Text(
+                    "¿Seguro que quieres eliminar ${court.name}? Esta acción no se puede deshacer.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deleteCourt(court.id) }) {
+                    Text("Eliminar", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onDismissDelete() }) {
+                    Text("Cancelar", color = TextHint)
+                }
             }
         )
     }
@@ -177,7 +239,9 @@ fun AdminCourtsScreen(navController: NavController) {
 private fun AdminCourtCard(
     court: Court,
     onDisable: () -> Unit,
-    onEnable: () -> Unit
+    onEnable: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -260,7 +324,7 @@ private fun AdminCourtCard(
                     }
 
                     IconButton(
-                        onClick = {},
+                        onClick = onEdit,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(SurfaceVariant)
@@ -269,7 +333,7 @@ private fun AdminCourtCard(
                     }
 
                     IconButton(
-                        onClick = {},
+                        onClick = onDelete,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(Error.copy(alpha = 0.15f))
@@ -406,6 +470,126 @@ private fun DisableCourtSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = Red600)
             ) {
                 Text("Confirmar", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditCourtSheet(
+    court: Court,
+    onDismiss: () -> Unit,
+    onConfirm: (Court) -> Unit
+) {
+    var name by remember { mutableStateOf(court.name) }
+    var description by remember { mutableStateOf(court.description) }
+    var price by remember { mutableStateOf(court.pricePerHour.toString()) }
+    var imageUrl by remember { mutableStateOf(court.imageUrl ?: "") }
+    var inputError by remember { mutableStateOf<String?>(null) }
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 32.dp)
+        ) {
+            Text("Editar Pista", style = MaterialTheme.typography.titleLarge)
+            Text(court.name, style = MaterialTheme.typography.bodyMedium, color = Red600)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre *") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = disableSheetFieldColors(),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descripción") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                colors = disableSheetFieldColors(),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = price,
+                onValueChange = { price = it },
+                label = { Text("Precio/hora *") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                colors = disableSheetFieldColors(),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = imageUrl,
+                onValueChange = { imageUrl = it },
+                label = { Text("URL de imagen") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = disableSheetFieldColors(),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            inputError?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(it, style = MaterialTheme.typography.bodySmall, color = Error)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    val priceDouble = price.toDoubleOrNull()
+                    if (name.isBlank()) {
+                        inputError = "El nombre es obligatorio"
+                        return@Button
+                    }
+                    if (priceDouble == null || priceDouble <= 0) {
+                        inputError = "Precio inválido"
+                        return@Button
+                    }
+                    inputError = null
+                    onConfirm(
+                        court.copy(
+                            name = name,
+                            description = description,
+                            pricePerHour = priceDouble,
+                            imageUrl = imageUrl.ifBlank { null }
+                        )
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(26.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Red600)
+            ) {
+                Text("Guardar cambios", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

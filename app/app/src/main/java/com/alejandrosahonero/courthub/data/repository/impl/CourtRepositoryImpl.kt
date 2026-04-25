@@ -28,11 +28,14 @@ class CourtRepositoryImpl(
     override fun getCourts(): Flow<List<Court>> = callbackFlow {
         val listener = firestore.collection(Constants.COLLECTION_COURTS)
             .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                val courts = snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(CourtDto::class.java)?.toDomain(doc.id)
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
-                trySend(courts)
+                val courts = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(CourtDto::class.java)?.toDomain(doc.id)
+                } ?: emptyList()
+                trySend(courts).isSuccess
             }
         awaitClose { listener.remove() }
     }
@@ -64,6 +67,16 @@ class CourtRepositoryImpl(
             val dto = court.toDto()
             firestore.collection(Constants.COLLECTION_COURTS)
                 .document(court.id).set(dto).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteCourt(courtId: String): Result<Unit> {
+        return try {
+            firestore.collection("courts").document(courtId).delete().await()
+            courtDao.deleteAll() // limpia caché local
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
