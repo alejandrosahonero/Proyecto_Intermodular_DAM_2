@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.alejandrosahonero.courthub.data.local.mapper.toDomain
 import com.alejandrosahonero.courthub.data.model.firestore.UserDto
 import com.alejandrosahonero.courthub.domain.model.User
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,8 +35,8 @@ class AdminUsersViewModel(
     private fun loadUsers() {
         viewModelScope.launch {
             try {
-                val snapshot = firestore.collection("users")
-                    .whereEqualTo("role", "client")
+                val snapshot = firestore.collection(Constants.COLLECTION_USERS)
+                    .whereEqualTo("role", Constants.ROLE_CLIENT)
                     .get().await()
                 val users = snapshot.documents.mapNotNull { doc ->
                     val dto = doc.toObject(UserDto::class.java) ?: return@mapNotNull null

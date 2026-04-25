@@ -1,12 +1,13 @@
 package com.alejandrosahonero.courthub.data.model.firestore
 
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.firestore.PropertyName
 
 data class UserDto(
     val uid: String = "",
     val name: String = "",
     val email: String = "",
-    val role: String = "client",
+    val role: String = Constants.ROLE_CLIENT,
 
     @get:PropertyName("fcmToken")
     @set:PropertyName("fcmToken")
@@ -17,5 +18,5 @@ data class UserDto(
     var createdAt: com.google.firebase.Timestamp? = null
 ) {
     // Constructor sin argumentos requerido por Firestore
-    constructor() : this("", "", "", "client", "", null)
+    constructor() : this("", "", "", Constants.ROLE_CLIENT, "", null)
 }

@@ -7,6 +7,7 @@ import com.alejandrosahonero.courthub.data.local.mapper.toEntity
 import com.alejandrosahonero.courthub.data.model.firestore.ReservationDto
 import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -27,7 +28,7 @@ class ReservationRepositoryImpl(
         }
 
     override fun getAllReservations(): Flow<List<Reservation>> = callbackFlow {
-        val listener = firestore.collection("reservations")
+        val listener = firestore.collection(Constants.COLLECTION_RESERVATIONS)
             .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
@@ -41,7 +42,7 @@ class ReservationRepositoryImpl(
 
     override suspend fun getReservationById(reservationId: String): Result<Reservation> {
         return try {
-            val doc = firestore.collection("reservations")
+            val doc = firestore.collection(Constants.COLLECTION_RESERVATIONS)
                 .document(reservationId).get().await()
             val dto = doc.toObject(ReservationDto::class.java)
                 ?: return Result.failure(Exception("Reserva no encontrada"))
@@ -54,7 +55,7 @@ class ReservationRepositoryImpl(
     override suspend fun createReservation(reservation: Reservation): Result<String> {
         return try {
             val dto = reservation.toDto()
-            val docRef = firestore.collection("reservations").add(dto).await()
+            val docRef = firestore.collection(Constants.COLLECTION_RESERVATIONS).add(dto).await()
             // Guardamos también en Room para acceso offline
             val saved = reservation.copy(id = docRef.id)
             reservationDao.insertReservation(saved.toEntity())
@@ -70,17 +71,17 @@ class ReservationRepositoryImpl(
     ): Result<Unit> {
         return try {
             val cancelledAt = System.currentTimeMillis()
-            firestore.collection("reservations").document(reservationId).update(
+            firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservationId).update(
                 mapOf(
-                    "status" to "cancelled",
+                    "status" to Constants.STATUS_CANCELLED,
                     "cancellationReason" to reason,
-                    "accessCodeStatus" to "INVALID",
+                    "accessCodeStatus" to Constants.ACCESS_INVALID,
                     "cancelledAt" to Timestamp(Date(cancelledAt))
                 )
             ).await()
             reservationDao.updateReservationStatus(
                 reservationId = reservationId,
-                status = "cancelled",
+                status = Constants.STATUS_CANCELLED,
                 cancelledAt = cancelledAt
             )
             Result.success(Unit)
@@ -92,13 +93,13 @@ class ReservationRepositoryImpl(
     override suspend fun markAccessCodeAsUsed(reservationId: String): Result<Unit> {
         return try {
             val scannedAt = System.currentTimeMillis()
-            firestore.collection("reservations").document(reservationId).update(
+            firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservationId).update(
                 mapOf(
-                    "accessCodeStatus" to "USED",
+                    "accessCodeStatus" to Constants.ACCESS_USED,
                     "scannedAt" to Timestamp(Date(scannedAt))
                 )
             ).await()
-            reservationDao.updateAccessCodeStatus(reservationId, "USED")
+            reservationDao.updateAccessCodeStatus(reservationId, Constants.ACCESS_USED)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -107,7 +108,7 @@ class ReservationRepositoryImpl(
 
     override suspend fun syncUserReservationsToLocal(userId: String): Result<Unit> {
         return try {
-            val snapshot = firestore.collection("reservations")
+            val snapshot = firestore.collection(Constants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("userId", userId)
                 .get().await()
             val entities = snapshot.documents.mapNotNull { doc ->

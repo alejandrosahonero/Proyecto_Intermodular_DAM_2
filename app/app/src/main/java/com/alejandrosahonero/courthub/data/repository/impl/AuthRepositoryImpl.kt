@@ -7,6 +7,7 @@ import com.alejandrosahonero.courthub.data.model.firestore.UserDto
 import com.alejandrosahonero.courthub.domain.model.User
 import com.alejandrosahonero.courthub.domain.model.UserRole
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,7 +26,7 @@ class AuthRepositoryImpl(
         if (local != null) return local.toDomain()
         // Si no hay caché local, consultamos Firestore
         return try {
-            val doc = firestore.collection("users")
+            val doc = firestore.collection(Constants.COLLECTION_USERS)
                 .document(firebaseUser.uid)
                 .get().await()
             val dto = doc.toObject(UserDto::class.java) ?: return null
@@ -43,7 +44,7 @@ class AuthRepositoryImpl(
             val firebaseUser = result.user
                 ?: return Result.failure(Exception("Error al iniciar sesión"))
 
-            val doc = firestore.collection("users")
+            val doc = firestore.collection(Constants.COLLECTION_USERS)
                 .document(firebaseUser.uid)
                 .get().await()
             val dto = doc.toObject(UserDto::class.java)
@@ -86,7 +87,7 @@ class AuthRepositoryImpl(
                 "fcmToken" to user.fcmToken,
                 "createdAt" to Timestamp(java.util.Date(user.createdAt))
             )
-            firestore.collection("users")
+            firestore.collection(Constants.COLLECTION_USERS)
                 .document(user.uid)
                 .set(dto).await()
 
@@ -111,7 +112,7 @@ class AuthRepositoryImpl(
 
     override suspend fun updateFcmToken(uid: String, token: String): Result<Unit> {
         return try {
-            firestore.collection("users")
+            firestore.collection(Constants.COLLECTION_USERS)
                 .document(uid)
                 .update("fcmToken", token).await()
             Result.success(Unit)
