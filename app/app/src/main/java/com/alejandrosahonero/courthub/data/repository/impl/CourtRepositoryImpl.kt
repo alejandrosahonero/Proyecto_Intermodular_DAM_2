@@ -1,6 +1,5 @@
 package com.alejandrosahonero.courthub.data.repository.impl
 
-import com.alejandrosahonero.courthub.data.local.dao.CourtDao
 import com.alejandrosahonero.courthub.data.local.mapper.toDomain
 import com.alejandrosahonero.courthub.data.local.mapper.toDto
 import com.alejandrosahonero.courthub.data.model.firestore.CourtDto
@@ -16,8 +15,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 class CourtRepositoryImpl(
-    private val firestore: FirebaseFirestore,
-    private val courtDao: CourtDao
+    private val firestore: FirebaseFirestore
 ) : ICourtRepository {
 
     /**
@@ -35,7 +33,7 @@ class CourtRepositoryImpl(
                 val courts = snapshot?.documents?.mapNotNull { doc ->
                     doc.toObject(CourtDto::class.java)?.toDomain(doc.id)
                 } ?: emptyList()
-                trySend(courts).isSuccess
+                trySend(courts)
             }
         awaitClose { listener.remove() }
     }
@@ -76,7 +74,6 @@ class CourtRepositoryImpl(
     override suspend fun deleteCourt(courtId: String): Result<Unit> {
         return try {
             firestore.collection("courts").document(courtId).delete().await()
-            courtDao.deleteAll() // limpia caché local
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

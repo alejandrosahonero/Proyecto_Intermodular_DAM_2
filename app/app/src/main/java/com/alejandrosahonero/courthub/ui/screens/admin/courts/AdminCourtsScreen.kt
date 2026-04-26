@@ -161,7 +161,7 @@ fun AdminCourtsScreen(navController: NavController) {
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                         ) {
-                            items(viewModel.filteredCourts(), key = { it.id }) { court ->
+                            items(uiState.filteredCourts, key = { it.id }) { court ->
                                 AdminCourtCard(
                                     court = court,
                                     onDisable = { viewModel.onDisableRequest(court) },
