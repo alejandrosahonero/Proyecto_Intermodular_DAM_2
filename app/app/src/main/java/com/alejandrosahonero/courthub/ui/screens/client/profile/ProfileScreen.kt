@@ -1,5 +1,6 @@
 package com.alejandrosahonero.courthub.ui.screens.client.profile
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
@@ -67,6 +69,7 @@ fun ProfileScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     ClientScaffold(navController = navController) { contentModifier ->
         if (uiState.isLoading) {
@@ -150,10 +153,16 @@ fun ProfileScreen(navController: NavController) {
 
             // Sección Contactar Soporte
             ProfileSection(title = "Contactar Soporte") {
-                ProfileItem(
+                ProfileActionItem(
                     icon = Icons.Default.Phone,
                     label = "Teléfono de Soporte",
-                    value = "+34 900 123 456"
+                    subtitle = "+34 900 123 456",
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = "tel:+34900123456".toUri()
+                        }
+                        context.startActivity(intent)
+                    }
                 )
             }
 
