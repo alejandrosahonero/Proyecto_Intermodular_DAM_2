@@ -8,6 +8,7 @@ import com.alejandrosahonero.courthub.domain.model.ReservationStatus
 import com.alejandrosahonero.courthub.domain.model.User
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
+import com.alejandrosahonero.courthub.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -45,7 +46,7 @@ class AdminHomeViewModel(
     private fun loadStats() {
         viewModelScope.launch {
             reservationRepository.getAllReservations().collect { reservations ->
-                val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                val today = DateUtils.todayString()
                 val weekAgo = LocalDate.now().minusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE)
 
                 val confirmed = reservations.filter { it.status == ReservationStatus.CONFIRMED }

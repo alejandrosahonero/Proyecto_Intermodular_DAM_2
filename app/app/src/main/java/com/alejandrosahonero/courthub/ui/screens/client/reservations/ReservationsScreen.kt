@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus
+import com.alejandrosahonero.courthub.ui.components.QrCodeImage
 import com.alejandrosahonero.courthub.ui.screens.client.ClientScaffold
 import com.alejandrosahonero.courthub.ui.theme.Error
 import com.alejandrosahonero.courthub.ui.theme.Red600
@@ -65,6 +66,7 @@ import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
+import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 
 @Composable
@@ -226,7 +228,7 @@ private fun ReservationCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "$${reservation.totalPrice.toInt()}",
+                text = reservation.totalPrice.toPriceString(),
                 style = MaterialTheme.typography.titleMedium,
                 color = Red600
             )
@@ -338,21 +340,12 @@ private fun AccessCodeDialog(reservation: Reservation, onDismiss: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // QR placeholder — se implementará con ZXing en utils/
-                Box(
+                QrCodeImage(
+                    content = reservation.qrData,
                     modifier = Modifier
-                        .size(180.dp)
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = reservation.qrData,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 

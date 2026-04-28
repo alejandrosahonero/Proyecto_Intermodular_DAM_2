@@ -13,9 +13,14 @@ import kotlinx.coroutines.launch
 
 data class AdminCourtsUiState(
     val courts: List<Court> = emptyList(),
+    val filteredCourts: List<Court> = emptyList(),
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val courtToEdit: Court? = null,
+    val showDeleteDialog: Court? = null,
+    val courtToDisable: Court? = null,
+    val isRefreshing: Boolean = false
 )
 
 class AdminCourtsViewModel(
@@ -33,18 +38,62 @@ class AdminCourtsViewModel(
     private fun loadCourts() {
         viewModelScope.launch {
             courtRepository.getCourts().collect { courts ->
-                _uiState.update { it.copy(courts = courts, isLoading = false) }
+                _uiState.update {
+                    it.copy(
+                        courts = courts,
+                        filteredCourts = filterCourts(courts, it.searchQuery),
+                        isLoading = false,
+                        isRefreshing = false
+                    )
+                }
             }
         }
     }
 
-    fun onSearchQueryChange(query: String) = _uiState.update { it.copy(searchQuery = query) }
+    private fun filterCourts(courts: List<Court>, query: String): List<Court> =
+        courts.filter {
+            query.isBlank() ||
+                    it.name.contains(query, ignoreCase = true) ||
+                    it.type.value.contains(query, ignoreCase = true)
+        }
 
-    fun filteredCourts(): List<Court> {
-        val q = _uiState.value.searchQuery
-        return _uiState.value.courts.filter {
-            q.isBlank() || it.name.contains(q, ignoreCase = true) ||
-                    it.type.value.contains(q, ignoreCase = true)
+    fun onSearchQueryChange(query: String) {
+        _uiState.update {
+            it.copy(
+                searchQuery = query,
+                filteredCourts = filterCourts(it.courts, query)
+            )
+        }
+    }
+
+    fun refresh() {
+        _uiState.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(800)
+            _uiState.update { it.copy(isRefreshing = false) }
+        }
+    }
+
+    fun updateCourt(court: Court) {
+        viewModelScope.launch {
+            courtRepository.updateCourt(court)
+                .onSuccess { _uiState.update { it.copy(courtToEdit = null) } }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
+    fun deleteCourt(courtId: String) {
+        viewModelScope.launch {
+            courtRepository.deleteCourt(courtId)
+                .onSuccess { _uiState.update { it.copy(showDeleteDialog = null) } }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            error = e.message,
+                            showDeleteDialog = null
+                        )
+                    }
+                }
         }
     }
 
@@ -62,6 +111,12 @@ class AdminCourtsViewModel(
         }
     }
 
+    fun onDisableRequest(court: Court) = _uiState.update { it.copy(courtToDisable = court) }
+    fun onDismissDisable() = _uiState.update { it.copy(courtToDisable = null) }
+    fun onEditCourt(court: Court) = _uiState.update { it.copy(courtToEdit = court) }
+    fun onDismissEdit() = _uiState.update { it.copy(courtToEdit = null) }
+    fun onDeleteRequest(court: Court) = _uiState.update { it.copy(showDeleteDialog = court) }
+    fun onDismissDelete() = _uiState.update { it.copy(showDeleteDialog = null) }
     fun clearError() = _uiState.update { it.copy(error = null) }
 
     companion object {

@@ -1,6 +1,7 @@
 package com.alejandrosahonero.courthub.domain.usecase.court
 
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
+import com.alejandrosahonero.courthub.utils.DateUtils
 
 data class TimeSlot(
     val hour: String,      // "HH:mm"
@@ -23,7 +24,7 @@ class GetAvailableSlotsUseCase(private val repository: ICourtRepository) {
         val occupied = occupiedResult.getOrDefault(emptyList())
 
         val allSlots = (9..21).map { hour ->
-            "%02d:00".format(hour)
+            DateUtils.formatHour(hour)
         }
 
         val slots = allSlots.map { hour ->

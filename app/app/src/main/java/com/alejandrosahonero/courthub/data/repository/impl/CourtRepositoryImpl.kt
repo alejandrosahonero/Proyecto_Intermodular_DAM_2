@@ -1,24 +1,21 @@
 package com.alejandrosahonero.courthub.data.repository.impl
 
-import com.alejandrosahonero.courthub.data.local.dao.CourtDao
 import com.alejandrosahonero.courthub.data.local.mapper.toDomain
 import com.alejandrosahonero.courthub.data.local.mapper.toDto
-import com.alejandrosahonero.courthub.data.local.mapper.toEntity
 import com.alejandrosahonero.courthub.data.model.firestore.CourtDto
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 class CourtRepositoryImpl(
-    private val firestore: FirebaseFirestore,
-    private val courtDao: CourtDao
+    private val firestore: FirebaseFirestore
 ) : ICourtRepository {
 
     /**
@@ -27,12 +24,15 @@ class CourtRepositoryImpl(
      * actualiza Room y emite la lista actualizada.
      */
     override fun getCourts(): Flow<List<Court>> = callbackFlow {
-        val listener = firestore.collection("courts")
+        val listener = firestore.collection(Constants.COLLECTION_COURTS)
             .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                val courts = snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(CourtDto::class.java)?.toDomain(doc.id)
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
+                val courts = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(CourtDto::class.java)?.toDomain(doc.id)
+                } ?: emptyList()
                 trySend(courts)
             }
         awaitClose { listener.remove() }
@@ -40,7 +40,7 @@ class CourtRepositoryImpl(
 
     override suspend fun getCourtById(courtId: String): Result<Court> {
         return try {
-            val doc = firestore.collection("courts")
+            val doc = firestore.collection(Constants.COLLECTION_COURTS)
                 .document(courtId).get().await()
             val dto = doc.toObject(CourtDto::class.java)
                 ?: return Result.failure(Exception("Pista no encontrada"))
@@ -53,7 +53,7 @@ class CourtRepositoryImpl(
     override suspend fun createCourt(court: Court): Result<Unit> {
         return try {
             val dto = court.toDto()
-            firestore.collection("courts").add(dto).await()
+            firestore.collection(Constants.COLLECTION_COURTS).add(dto).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -63,8 +63,17 @@ class CourtRepositoryImpl(
     override suspend fun updateCourt(court: Court): Result<Unit> {
         return try {
             val dto = court.toDto()
-            firestore.collection("courts")
+            firestore.collection(Constants.COLLECTION_COURTS)
                 .document(court.id).set(dto).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteCourt(courtId: String): Result<Unit> {
+        return try {
+            firestore.collection("courts").document(courtId).delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -78,7 +87,7 @@ class CourtRepositoryImpl(
         disabledUntil: Long
     ): Result<Unit> {
         return try {
-            firestore.collection("courts").document(courtId).update(
+            firestore.collection(Constants.COLLECTION_COURTS).document(courtId).update(
                 mapOf(
                     "isEnabled" to false,
                     "disabledReason" to reason,
@@ -94,7 +103,7 @@ class CourtRepositoryImpl(
 
     override suspend fun enableCourt(courtId: String): Result<Unit> {
         return try {
-            firestore.collection("courts").document(courtId).update(
+            firestore.collection(Constants.COLLECTION_COURTS).document(courtId).update(
                 mapOf(
                     "isEnabled" to true,
                     "disabledReason" to null,
@@ -113,10 +122,10 @@ class CourtRepositoryImpl(
         date: String
     ): Result<List<String>> {
         return try {
-            val snapshot = firestore.collection("reservations")
+            val snapshot = firestore.collection(Constants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("courtId", courtId)
                 .whereEqualTo("date", date)
-                .whereEqualTo("status", "confirmed")
+                .whereEqualTo("status", Constants.STATUS_CONFIRMED)
                 .get().await()
             val slots = snapshot.documents.mapNotNull { it.getString("startTime") }
             Result.success(slots)

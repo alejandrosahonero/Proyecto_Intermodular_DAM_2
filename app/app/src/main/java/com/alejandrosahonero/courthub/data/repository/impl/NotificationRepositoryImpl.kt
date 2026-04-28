@@ -4,6 +4,7 @@ import com.alejandrosahonero.courthub.data.local.dao.NotificationDao
 import com.alejandrosahonero.courthub.data.local.mapper.toDomain
 import com.alejandrosahonero.courthub.domain.model.AppNotification
 import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,7 +23,7 @@ class NotificationRepositoryImpl(
 
     override suspend fun markAsRead(notificationId: String): Result<Unit> {
         return try {
-            firestore.collection("notifications")
+            firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
                 .document(notificationId)
                 .update("isRead", true).await()
             notificationDao.markAsRead(notificationId)
@@ -35,7 +36,7 @@ class NotificationRepositoryImpl(
     override suspend fun markAllAsRead(userId: String): Result<Unit> {
         return try {
             // Batch update en Firestore
-            val snapshot = firestore.collection("notifications")
+            val snapshot = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("isRead", false)
                 .get().await()

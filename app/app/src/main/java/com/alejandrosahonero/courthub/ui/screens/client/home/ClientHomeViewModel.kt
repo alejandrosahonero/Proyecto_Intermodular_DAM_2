@@ -11,6 +11,8 @@ import com.alejandrosahonero.courthub.domain.usecase.court.GetCourtsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,7 +21,8 @@ data class ClientHomeUiState(
     val filteredCourts: List<Court> = emptyList(),
     val currentUser: User? = null,
     val isLoading: Boolean = true,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val isRefreshing: Boolean = false
 )
 
 class ClientHomeViewModel(
@@ -45,28 +48,33 @@ class ClientHomeViewModel(
 
     private fun loadCourts() {
         viewModelScope.launch {
-            getCourtsUseCase().collect { courts ->
-                _uiState.update {
-                    it.copy(
-                        courts = courts,
-                        filteredCourts = courts.filter { c -> c.isEnabled },
-                        isLoading = false
-                    )
+            getCourtsUseCase()
+                .catch { e -> _uiState.update { it.copy(isLoading = false) } }
+                .collect { courts ->
+                    _uiState.update {
+                        it.copy(
+                            courts = courts,
+                            filteredCourts = applyFilter(courts, it.searchQuery),
+                            isLoading = false
+                        )
+                    }
                 }
-            }
         }
     }
+
+    private fun applyFilter(courts: List<Court>, query: String): List<Court> =
+        courts.filter { c ->
+            c.isEnabled &&
+                    (query.isBlank() ||
+                            c.name.contains(query, ignoreCase = true) ||
+                            c.type.value.contains(query, ignoreCase = true))
+        }
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { state ->
             state.copy(
                 searchQuery = query,
-                filteredCourts = state.courts.filter { court ->
-                    court.isEnabled &&
-                            (query.isBlank() ||
-                                    court.name.contains(query, ignoreCase = true) ||
-                                    court.type.value.contains(query, ignoreCase = true))
-                }
+                filteredCourts = applyFilter(state.courts, query)
             )
         }
     }
@@ -75,6 +83,23 @@ class ClientHomeViewModel(
         viewModelScope.launch {
             logoutUseCase()
             onSuccess()
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            getCourtsUseCase()
+                .take(1)
+                .collect { courts ->
+                    _uiState.update {
+                        it.copy(
+                            courts = courts,
+                            filteredCourts = applyFilter(courts, it.searchQuery),
+                            isRefreshing = false
+                        )
+                    }
+                }
         }
     }
 

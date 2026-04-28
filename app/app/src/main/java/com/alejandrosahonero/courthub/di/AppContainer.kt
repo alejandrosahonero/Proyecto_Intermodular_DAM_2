@@ -45,8 +45,7 @@ class AppContainer(context: Context) {
     )
 
     val courtRepository: ICourtRepository = CourtRepositoryImpl(
-        firestore = firestore,
-        courtDao = courtDao
+        firestore = firestore
     )
 
     val reservationRepository: IReservationRepository = ReservationRepositoryImpl(

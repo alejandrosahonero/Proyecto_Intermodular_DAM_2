@@ -2,9 +2,13 @@ package com.alejandrosahonero.courthub.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -12,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
+import com.alejandrosahonero.courthub.domain.model.UserRole
 import com.alejandrosahonero.courthub.ui.screens.admin.courts.AdminCourtsScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.home.AdminHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.notifications.AdminNotificationsScreen
@@ -27,19 +32,34 @@ import com.alejandrosahonero.courthub.ui.screens.client.notifications.Notificati
 import com.alejandrosahonero.courthub.ui.screens.client.payment.PaymentScreen
 import com.alejandrosahonero.courthub.ui.screens.client.profile.ProfileScreen
 import com.alejandrosahonero.courthub.ui.screens.client.reservations.ReservationsScreen
+import com.alejandrosahonero.courthub.ui.theme.Red600
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
     val app = LocalContext.current.applicationContext as CourtHubApp
+    var startDestination by remember { mutableStateOf<String?>(null) }
 
-    // Punto de inicio: Login. Cuando implementemos auth persistente
-    // esto cambiará para detectar si ya hay sesión activa.
+    LaunchedEffect(Unit) {
+        val user = app.container.authRepository.getCurrentUser()
+        startDestination = when {
+            user == null -> Screen.Login.route
+            user.role == UserRole.ADMIN -> Screen.AdminHome.route
+            else -> Screen.ClientHome.route
+        }
+    }
+
+    if (startDestination == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Red600)
+        }
+        return
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startDestination!!
     ) {
-
         // ── Auth ──────────────────────────────────────────────────────────────
         composable(Screen.Login.route) {
             LoginScreen(navController = navController)
@@ -67,7 +87,7 @@ fun NavGraph() {
         }
         composable(Screen.ReservationStep.route) { backStackEntry ->
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
-            PlaceholderScreen("Reservation Step: $courtId")
+            CourtDetailScreen(courtId = courtId, navController = navController)
         }
         composable(Screen.Payment.route) { backStackEntry ->
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
@@ -98,18 +118,5 @@ fun NavGraph() {
         composable(Screen.AdminProfile.route) {
             AdminProfileScreen(navController = navController)
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.headlineMedium
-        )
     }
 }

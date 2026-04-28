@@ -1,5 +1,6 @@
 package com.alejandrosahonero.courthub.data.model.firestore
 
+import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.PropertyName
 
@@ -11,11 +12,11 @@ data class ReservationDto(
     val date: String = "",
     val startTime: String = "",
     val endTime: String = "",
-    val status: String = "confirmed",
+    val status: String = Constants.STATUS_CONFIRMED,
     val totalPrice: Double = 0.0,
     val paymentId: String = "",
     val accessCode: String = "",
-    val accessCodeStatus: String = "VALID",
+    val accessCodeStatus: String = Constants.ACCESS_VALID,
     val qrData: String = "",
     val cancellationReason: String? = null,
 
@@ -32,7 +33,7 @@ data class ReservationDto(
     var scannedAt: Timestamp? = null
 ) {
     constructor() : this(
-        "", "", "", "", "", "", "", "confirmed",
-        0.0, "", "", "VALID", "", null, null, null, null
+        "", "", "", "", "", "", "", Constants.STATUS_CONFIRMED,
+        0.0, "", "", Constants.ACCESS_VALID, "", null, null, null, null
     )
 }

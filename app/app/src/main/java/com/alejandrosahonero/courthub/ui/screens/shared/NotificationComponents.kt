@@ -35,6 +35,7 @@ import com.alejandrosahonero.courthub.ui.theme.Success
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
+import com.alejandrosahonero.courthub.utils.toRelativeTime
 
 @Composable
 fun NotificationItem(
@@ -79,7 +80,7 @@ fun NotificationItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                formatRelativeTime(notification.createdAt),
+                notification.createdAt.toRelativeTime(),
                 style = MaterialTheme.typography.labelSmall,
                 color = TextHint
             )
@@ -97,16 +98,3 @@ fun NotificationItem(
     }
 }
 
-fun formatRelativeTime(epochMillis: Long): String {
-    val diff = System.currentTimeMillis() - epochMillis
-    val minutes = diff / 60_000
-    val hours = minutes / 60
-    val days = hours / 24
-    return when {
-        minutes < 1 -> "Ahora mismo"
-        minutes < 60 -> "Hace $minutes min"
-        hours < 24 -> "Hace $hours h"
-        days == 1L -> "Ayer"
-        else -> "Hace $days días"
-    }
-}

@@ -49,6 +49,8 @@ import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.toInitials
+import com.alejandrosahonero.courthub.utils.toPriceString
 
 @Composable
 fun AdminHomeScreen(navController: NavController) {
@@ -103,11 +105,7 @@ fun AdminHomeScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = uiState.currentUser?.name
-                            ?.split(" ")
-                            ?.mapNotNull { it.firstOrNull()?.uppercaseChar() }
-                            ?.take(2)
-                            ?.joinToString("") ?: "?",
+                        text = uiState.currentUser?.name?.toInitials() ?: "?",
                         style = MaterialTheme.typography.titleSmall,
                         color = Color.White
                     )
@@ -232,7 +230,7 @@ private fun RecentActivityItem(reservation: Reservation) {
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                "$${reservation.totalPrice.toInt()}",
+                reservation.totalPrice.toPriceString(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Red600
             )

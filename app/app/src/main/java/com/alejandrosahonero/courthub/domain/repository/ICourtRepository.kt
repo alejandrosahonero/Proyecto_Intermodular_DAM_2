@@ -16,6 +16,8 @@ interface ICourtRepository {
     // Solo Admin
     suspend fun updateCourt(court: Court): Result<Unit>
 
+    suspend fun deleteCourt(courtId: String): Result<Unit>
+
     /**
      * Deshabilita una pista. La Cloud Function onCourtDisabled
      * se encargará de cancelar reservas y reembolsos automáticamente.

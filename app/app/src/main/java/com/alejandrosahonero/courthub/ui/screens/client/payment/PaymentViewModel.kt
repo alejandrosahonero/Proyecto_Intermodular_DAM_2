@@ -11,6 +11,7 @@ import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.usecase.access.GenerateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.reservation.CreateReservationUseCase
+import com.alejandrosahonero.courthub.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -59,7 +60,7 @@ class PaymentViewModel(
             _uiState.update { it.copy(isPaying = true, error = null) }
             val user = authRepository.getCurrentUser()
             val accessCode = generateAccessCodeUseCase()
-            val endTime = "%02d:00".format(startTime.split(":")[0].toInt() + 1)
+            val endTime = DateUtils.endTimeFromStart(startTime)
             val reservation = Reservation(
                 userId = user?.uid ?: "",
                 userName = user?.name ?: "",
