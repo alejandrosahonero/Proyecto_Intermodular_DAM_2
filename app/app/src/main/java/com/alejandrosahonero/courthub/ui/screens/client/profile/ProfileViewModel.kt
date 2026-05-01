@@ -73,6 +73,16 @@ class ProfileViewModel(
         }
     }
 
+    fun updateNotificationsEnabled(enabled: Boolean) {
+        val uid = _uiState.value.user?.uid ?: return
+        viewModelScope.launch {
+            authRepository.updateNotificationsEnabled(uid, enabled)
+                .onSuccess {
+                    _uiState.update { it.copy(user = it.user?.copy(notificationsEnabled = enabled)) }
+                }
+        }
+    }
+
     companion object {
         fun factory(
             authRepository: IAuthRepository,

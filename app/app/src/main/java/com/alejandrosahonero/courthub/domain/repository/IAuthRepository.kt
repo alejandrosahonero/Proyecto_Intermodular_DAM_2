@@ -19,5 +19,7 @@ interface IAuthRepository {
 
     suspend fun updateFcmToken(uid: String, token: String): Result<Unit>
 
+    suspend fun updateNotificationsEnabled(uid: String, enabled: Boolean): Result<Unit>
+
     suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit>
 }

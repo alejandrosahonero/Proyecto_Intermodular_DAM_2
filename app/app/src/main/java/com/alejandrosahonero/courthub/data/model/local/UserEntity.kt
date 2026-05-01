@@ -13,5 +13,6 @@ data class UserEntity(
     val phone: String = "",
     val role: String,
     val fcmToken: String,
+    val notificationsEnabled: Boolean = true,
     val createdAt: Long // epoch millis
 )

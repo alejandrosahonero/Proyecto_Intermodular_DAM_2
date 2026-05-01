@@ -14,10 +14,12 @@ data class UserDto(
     @set:PropertyName("fcmToken")
     var fcmToken: String = "",
 
+    val notificationsEnabled: Boolean = true,
+
     @get:PropertyName("createdAt")
     @set:PropertyName("createdAt")
     var createdAt: com.google.firebase.Timestamp? = null
 ) {
     // Constructor sin argumentos requerido por Firestore
-    constructor() : this("", "", "", "", Constants.ROLE_CLIENT, "", null)
+    constructor() : this("", "", "", "", Constants.ROLE_CLIENT, "", true, null)
 }

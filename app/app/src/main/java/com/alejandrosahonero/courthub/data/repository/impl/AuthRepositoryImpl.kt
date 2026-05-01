@@ -121,6 +121,18 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun updateNotificationsEnabled(uid: String, enabled: Boolean): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update("notificationsEnabled", enabled).await()
+            val local = userDao.getUserByUid(uid)
+            if (local != null) userDao.insertUser(local.copy(notificationsEnabled = enabled))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit> {
         return try {
             firestore.collection("users").document(uid)

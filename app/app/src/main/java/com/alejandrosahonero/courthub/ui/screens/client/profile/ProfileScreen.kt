@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -151,12 +154,38 @@ fun ProfileScreen(navController: NavController) {
 
             // Sección Configuración
             ProfileSection(title = "Configuración") {
-                ProfileActionItem(
-                    icon = Icons.Default.Notifications,
-                    label = "Notificaciones",
-                    subtitle = "Gestiona tus preferencias de notificaciones",
-                    onClick = {}
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = Red600,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Notificaciones", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            if (user.notificationsEnabled) "Activadas" else "Desactivadas",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextHint
+                        )
+                    }
+                    Switch(
+                        checked = user.notificationsEnabled,
+                        onCheckedChange = { viewModel.updateNotificationsEnabled(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Red600,
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = SurfaceVariant
+                        )
+                    )
+                }
                 ProfileActionItem(
                     icon = Icons.Default.Settings,
                     label = "Configuración de Cuenta",
