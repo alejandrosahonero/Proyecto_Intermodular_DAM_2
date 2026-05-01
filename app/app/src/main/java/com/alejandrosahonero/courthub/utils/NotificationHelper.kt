@@ -29,12 +29,13 @@ object NotificationHelper {
         context: Context,
         courtName: String,
         date: String,
-        startTime: String
+        startTime: String,
+        endTime: String
     ) {
         showNotification(
             context,
             "Recordatorio de Reserva",
-            "Tienes una reserva en $courtName el $date a las $startTime"
+            "Tienes una reserva en $courtName el $date de $startTime a $endTime"
         )
     }
 

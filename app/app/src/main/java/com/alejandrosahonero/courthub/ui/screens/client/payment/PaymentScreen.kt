@@ -67,16 +67,22 @@ import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.TextHint
-import com.alejandrosahonero.courthub.utils.DateUtils
 import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
 
 @Composable
-fun PaymentScreen(courtId: String, date: String, startTime: String, navController: NavController) {
+fun PaymentScreen(
+    courtId: String,
+    date: String,
+    startTime: String,
+    endTime: String,
+    hours: Int,
+    navController: NavController
+) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: PaymentViewModel = viewModel(
         factory = PaymentViewModel.factory(
-            courtId, date, startTime,
+            courtId, date, startTime, endTime, hours,
             app.container.courtRepository,
             app.container.createReservationUseCase,
             app.container.generateAccessCodeUseCase,
@@ -143,9 +149,8 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                         text = uiState.court?.name ?: "",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    val endTime = DateUtils.endTimeFromStart(startTime)
                     Text(
-                        text = "$date  •  $startTime - $endTime",
+                        text = "$date  •  $startTime - $endTime ($hours h)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -156,9 +161,10 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        val totalPrice = (uiState.court?.pricePerHour ?: 0.0) * hours
                         Text("Total", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            text = (uiState.court?.pricePerHour ?: 0.0).toPriceString(),
+                            text = totalPrice.toPriceString(),
                             style = MaterialTheme.typography.titleMedium,
                             color = Red600
                         )
@@ -286,8 +292,9 @@ fun PaymentScreen(courtId: String, date: String, startTime: String, navControlle
                         strokeWidth = 2.dp
                     )
                 } else {
+                    val totalPrice = (uiState.court?.pricePerHour ?: 0.0) * hours
                     Text(
-                        "Pagar ${(uiState.court?.pricePerHour ?: 0.0).toPriceString()}",
+                        "Pagar ${totalPrice.toPriceString()}",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }

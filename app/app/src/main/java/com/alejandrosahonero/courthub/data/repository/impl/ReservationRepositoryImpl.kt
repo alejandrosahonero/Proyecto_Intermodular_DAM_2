@@ -110,7 +110,7 @@ class ReservationRepositoryImpl(
                 mapOf(
                     "userId" to reservation.userId,
                     "title" to "Reserva Cancelada",
-                    "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} ha sido cancelada por un administrador. Motivo: $reason. El importe ha sido reembolsado.",
+                    "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} (${reservation.startTime} - ${reservation.endTime}) ha sido cancelada por un administrador. Motivo: $reason. El importe ha sido reembolsado.",
                     "type" to "cancellation",
                     "isRead" to false,
                     "createdAt" to Timestamp.now()

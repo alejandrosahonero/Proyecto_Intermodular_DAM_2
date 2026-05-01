@@ -44,7 +44,8 @@ class ReservationReminderWorker(
                                     context = applicationContext,
                                     courtName = reservation.courtName,
                                     date = reservation.date,
-                                    startTime = reservation.startTime
+                                    startTime = reservation.startTime,
+                                    endTime = reservation.endTime
                                 )
                             }
                         } catch (e: Exception) {
