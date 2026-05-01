@@ -1,6 +1,7 @@
 package com.alejandrosahonero.courthub.ui.screens.admin.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,18 +14,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,10 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
+import com.alejandrosahonero.courthub.domain.model.SupportSettings
 import com.alejandrosahonero.courthub.ui.navigation.Screen
 import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
 import com.alejandrosahonero.courthub.ui.screens.client.profile.ProfileViewModel
@@ -49,6 +56,7 @@ import com.alejandrosahonero.courthub.ui.screens.shared.ProfileActionItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileSection
 import com.alejandrosahonero.courthub.ui.theme.Error
+import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
@@ -61,11 +69,13 @@ fun AdminProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModel.factory(
             app.container.authRepository,
-            app.container.logoutUseCase
+            app.container.logoutUseCase,
+            app.container.supportRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showSupportDialog by remember { mutableStateOf(false) }
 
     AdminScaffold(navController = navController) { contentModifier ->
         if (uiState.isLoading) {
@@ -135,6 +145,12 @@ fun AdminProfileScreen(navController: NavController) {
                     subtitle = "Actualiza los detalles de tu cuenta",
                     onClick = {}
                 )
+                ProfileActionItem(
+                    icon = Icons.Default.SupportAgent,
+                    label = "Datos de Soporte",
+                    subtitle = "Editar teléfono y email de soporte",
+                    onClick = { showSupportDialog = true }
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -191,4 +207,83 @@ fun AdminProfileScreen(navController: NavController) {
             }
         )
     }
+
+    if (showSupportDialog) {
+        EditSupportDialog(
+            current = uiState.supportSettings,
+            onDismiss = { showSupportDialog = false },
+            onConfirm = { settings ->
+                viewModel.updateSupport(settings)
+                showSupportDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun EditSupportDialog(
+    current: SupportSettings,
+    onDismiss: () -> Unit,
+    onConfirm: (SupportSettings) -> Unit
+) {
+    var phone by remember { mutableStateOf(current.phone) }
+    var email by remember { mutableStateOf(current.email) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Surface,
+        title = { Text("Datos de Soporte") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Teléfono") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Red600,
+                        unfocusedBorderColor = Outline,
+                        focusedLabelColor = Red600,
+                        unfocusedLabelColor = TextHint,
+                        cursorColor = Red600,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Red600,
+                        unfocusedBorderColor = Outline,
+                        focusedLabelColor = Red600,
+                        unfocusedLabelColor = TextHint,
+                        cursorColor = Red600,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(SupportSettings(phone = phone, email = email))
+            }) {
+                Text("Guardar", color = Red600)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = TextHint)
+            }
+        }
+    )
 }

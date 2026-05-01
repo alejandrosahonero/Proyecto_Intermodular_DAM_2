@@ -1,6 +1,7 @@
 package com.alejandrosahonero.courthub.ui.screens.client.profile
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
@@ -64,7 +64,8 @@ fun ProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = viewModel(
         factory = ProfileViewModel.factory(
             app.container.authRepository,
-            app.container.logoutUseCase
+            app.container.logoutUseCase,
+            app.container.supportRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -156,10 +157,11 @@ fun ProfileScreen(navController: NavController) {
                 ProfileActionItem(
                     icon = Icons.Default.Phone,
                     label = "Teléfono de Soporte",
-                    subtitle = "+34 900 123 456",
+                    subtitle = uiState.supportSettings.phone,
                     onClick = {
                         val intent = Intent(Intent.ACTION_DIAL).apply {
-                            data = "tel:+34900123456".toUri()
+                            data =
+                                Uri.parse("tel:${uiState.supportSettings.phone.replace(" ", "")}")
                         }
                         context.startActivity(intent)
                     }
