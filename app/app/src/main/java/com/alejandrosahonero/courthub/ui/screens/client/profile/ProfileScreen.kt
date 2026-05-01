@@ -3,6 +3,7 @@ package com.alejandrosahonero.courthub.ui.screens.client.profile
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Notifications
@@ -28,6 +31,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -52,6 +58,7 @@ import com.alejandrosahonero.courthub.ui.screens.shared.ProfileActionItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileItem
 import com.alejandrosahonero.courthub.ui.screens.shared.ProfileSection
 import com.alejandrosahonero.courthub.ui.theme.Error
+import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.SurfaceVariant
@@ -70,6 +77,8 @@ fun ProfileScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
     ClientScaffold(navController = navController) { contentModifier ->
@@ -128,7 +137,13 @@ fun ProfileScreen(navController: NavController) {
                 ProfileItem(
                     icon = Icons.Default.Phone,
                     label = "Teléfono",
-                    value = "+34 —"
+                    value = user.phone.ifBlank { "No especificado" }
+                )
+                ProfileActionItem(
+                    icon = Icons.Default.Edit,
+                    label = "Editar perfil",
+                    subtitle = "Modifica tu nombre y teléfono",
+                    onClick = { showEditDialog = true }
                 )
             }
 
@@ -194,6 +209,19 @@ fun ProfileScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+
+        if (showEditDialog) {
+            EditProfileDialog(
+                currentName = user.name,
+                currentPhone = user.phone,
+                isSaving = uiState.isSavingProfile,
+                onDismiss = { showEditDialog = false },
+                onConfirm = { name, phone ->
+                    viewModel.updateProfile(name, phone)
+                    showEditDialog = false
+                }
+            )
+        }
     }
 
     if (showLogoutDialog) {
@@ -226,4 +254,82 @@ fun ProfileScreen(navController: NavController) {
             }
         )
     }
+}
+
+@Composable
+private fun EditProfileDialog(
+    currentName: String,
+    currentPhone: String,
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (name: String, phone: String) -> Unit
+) {
+    var name by remember { mutableStateOf(currentName) }
+    var phone by remember { mutableStateOf(currentPhone) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Surface,
+        title = { Text("Editar perfil") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nombre completo") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Red600,
+                        unfocusedBorderColor = Outline,
+                        focusedLabelColor = Red600,
+                        unfocusedLabelColor = TextHint,
+                        cursorColor = Red600,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Teléfono") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Red600,
+                        unfocusedBorderColor = Outline,
+                        focusedLabelColor = Red600,
+                        unfocusedLabelColor = TextHint,
+                        cursorColor = Red600,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(name, phone) },
+                enabled = !isSaving && name.isNotBlank()
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        color = Red600,
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Guardar", color = Red600)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = TextHint)
+            }
+        }
+    )
 }

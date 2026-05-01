@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val user: User? = null,
     val isLoading: Boolean = true,
-    val supportSettings: SupportSettings = SupportSettings()
+    val supportSettings: SupportSettings = SupportSettings(),
+    val isSavingProfile: Boolean = false
 )
 
 class ProfileViewModel(
@@ -52,6 +53,23 @@ class ProfileViewModel(
         viewModelScope.launch {
             supportRepository.updateSupportSettings(settings)
                 .onSuccess { _uiState.update { it.copy(supportSettings = settings) } }
+        }
+    }
+
+    fun updateProfile(name: String, phone: String) {
+        val uid = _uiState.value.user?.uid ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSavingProfile = true) }
+            authRepository.updateUserProfile(uid, name, phone)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isSavingProfile = false,
+                            user = it.user?.copy(name = name, phone = phone)
+                        )
+                    }
+                }
+                .onFailure { _uiState.update { it.copy(isSavingProfile = false) } }
         }
     }
 

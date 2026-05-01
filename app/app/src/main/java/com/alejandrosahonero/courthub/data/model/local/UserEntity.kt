@@ -10,6 +10,7 @@ data class UserEntity(
     val uidFirebase: String,
     val name: String,
     val email: String,
+    val phone: String = "",
     val role: String,
     val fcmToken: String,
     val createdAt: Long // epoch millis

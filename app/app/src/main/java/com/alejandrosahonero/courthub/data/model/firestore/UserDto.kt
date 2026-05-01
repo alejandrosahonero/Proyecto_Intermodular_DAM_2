@@ -7,6 +7,7 @@ data class UserDto(
     val uid: String = "",
     val name: String = "",
     val email: String = "",
+    val phone: String = "",
     val role: String = Constants.ROLE_CLIENT,
 
     @get:PropertyName("fcmToken")
@@ -18,5 +19,5 @@ data class UserDto(
     var createdAt: com.google.firebase.Timestamp? = null
 ) {
     // Constructor sin argumentos requerido por Firestore
-    constructor() : this("", "", "", Constants.ROLE_CLIENT, "", null)
+    constructor() : this("", "", "", "", Constants.ROLE_CLIENT, "", null)
 }

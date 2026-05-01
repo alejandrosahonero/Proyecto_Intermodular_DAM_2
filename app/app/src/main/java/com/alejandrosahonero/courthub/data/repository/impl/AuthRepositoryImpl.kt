@@ -120,4 +120,18 @@ class AuthRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update(mapOf("name" to name, "phone" to phone)).await()
+            val local = userDao.getUserByUid(uid)
+            if (local != null) {
+                userDao.insertUser(local.copy(name = name, phone = phone))
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
