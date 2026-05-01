@@ -1,11 +1,16 @@
 package com.alejandrosahonero.courthub.ui.screens.admin.reservations
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
+import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,8 +28,9 @@ data class AdminReservationsUiState(
 )
 
 class AdminReservationsViewModel(
+    application: Application,
     private val reservationRepository: IReservationRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminReservationsUiState())
     val uiState = _uiState.asStateFlow()
@@ -59,10 +65,27 @@ class AdminReservationsViewModel(
                 reason = reason
             ).onSuccess {
                 _uiState.update { it.copy(isCancelling = false, showCancelDialog = null) }
+                sendLocalNotification(
+                    "Reserva Cancelada",
+                    "Se ha cancelado la reserva de ${reservation.userName} en ${reservation.courtName}"
+                )
             }.onFailure { e ->
                 _uiState.update { it.copy(isCancelling = false, error = e.message) }
             }
         }
+    }
+
+    private fun sendLocalNotification(title: String, message: String) {
+        val data = Data.Builder()
+            .putString("title", title)
+            .putString("message", message)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInputData(data)
+            .build()
+
+        WorkManager.getInstance(getApplication()).enqueue(workRequest)
     }
 
     fun filteredReservations(): List<Reservation> {
@@ -82,11 +105,11 @@ class AdminReservationsViewModel(
     }
 
     companion object {
-        fun factory(reservationRepository: IReservationRepository) =
+        fun factory(application: Application, reservationRepository: IReservationRepository) =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                    AdminReservationsViewModel(reservationRepository) as T
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                    AdminReservationsViewModel(application, reservationRepository) as T
             }
     }
 }

@@ -1,11 +1,16 @@
 package com.alejandrosahonero.courthub.ui.screens.admin.courts
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.usecase.court.DisableCourtUseCase
+import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -24,9 +29,10 @@ data class AdminCourtsUiState(
 )
 
 class AdminCourtsViewModel(
+    application: Application,
     private val courtRepository: ICourtRepository,
     private val disableCourtUseCase: DisableCourtUseCase
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminCourtsUiState())
     val uiState = _uiState.asStateFlow()
@@ -77,7 +83,13 @@ class AdminCourtsViewModel(
     fun updateCourt(court: Court) {
         viewModelScope.launch {
             courtRepository.updateCourt(court)
-                .onSuccess { _uiState.update { it.copy(courtToEdit = null) } }
+                .onSuccess {
+                    _uiState.update { it.copy(courtToEdit = null) }
+                    sendLocalNotification(
+                        "Pista Actualizada",
+                        "La pista ${court.name} ha sido modificada."
+                    )
+                }
                 .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
         }
     }
@@ -85,7 +97,13 @@ class AdminCourtsViewModel(
     fun deleteCourt(courtId: String) {
         viewModelScope.launch {
             courtRepository.deleteCourt(courtId)
-                .onSuccess { _uiState.update { it.copy(showDeleteDialog = null) } }
+                .onSuccess {
+                    _uiState.update { it.copy(showDeleteDialog = null) }
+                    sendLocalNotification(
+                        "Pista Eliminada",
+                        "La pista ha sido eliminada correctamente."
+                    )
+                }
                 .onFailure { e ->
                     _uiState.update {
                         it.copy(
@@ -100,6 +118,12 @@ class AdminCourtsViewModel(
     fun disableCourt(courtId: String, reason: String, from: Long, until: Long) {
         viewModelScope.launch {
             disableCourtUseCase(courtId, reason, from, until)
+                .onSuccess {
+                    sendLocalNotification(
+                        "Pista Deshabilitada",
+                        "Se han cancelado las reservas y deshabilitado la pista."
+                    )
+                }
                 .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
         }
     }
@@ -107,8 +131,24 @@ class AdminCourtsViewModel(
     fun enableCourt(courtId: String) {
         viewModelScope.launch {
             courtRepository.enableCourt(courtId)
+                .onSuccess {
+                    sendLocalNotification("Pista Habilitada", "La pista vuelve a estar disponible.")
+                }
                 .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
         }
+    }
+
+    private fun sendLocalNotification(title: String, message: String) {
+        val data = Data.Builder()
+            .putString("title", title)
+            .putString("message", message)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInputData(data)
+            .build()
+
+        WorkManager.getInstance(getApplication()).enqueue(workRequest)
     }
 
     fun onDisableRequest(court: Court) = _uiState.update { it.copy(courtToDisable = court) }
@@ -121,12 +161,13 @@ class AdminCourtsViewModel(
 
     companion object {
         fun factory(
+            application: Application,
             courtRepository: ICourtRepository,
             disableCourtUseCase: DisableCourtUseCase
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AdminCourtsViewModel(courtRepository, disableCourtUseCase) as T
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
+                AdminCourtsViewModel(application, courtRepository, disableCourtUseCase) as T
         }
     }
 }

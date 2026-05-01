@@ -89,6 +89,7 @@ fun AdminCourtsScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: AdminCourtsViewModel = viewModel(
         factory = AdminCourtsViewModel.factory(
+            app,
             app.container.courtRepository,
             app.container.disableCourtUseCase
         )

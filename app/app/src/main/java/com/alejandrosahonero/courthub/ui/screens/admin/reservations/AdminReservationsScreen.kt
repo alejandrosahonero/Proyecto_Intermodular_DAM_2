@@ -75,7 +75,7 @@ import kotlinx.coroutines.launch
 fun AdminReservationsScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: AdminReservationsViewModel = viewModel(
-        factory = AdminReservationsViewModel.factory(app.container.reservationRepository)
+        factory = AdminReservationsViewModel.factory(app, app.container.reservationRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
