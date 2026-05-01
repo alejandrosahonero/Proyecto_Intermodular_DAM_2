@@ -16,7 +16,10 @@ data class AdminReservationsUiState(
     val reservations: List<Reservation> = emptyList(),
     val isLoading: Boolean = true,
     val selectedTab: Int = 0,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val showCancelDialog: Reservation? = null,
+    val isCancelling: Boolean = false,
+    val error: String? = null
 )
 
 class AdminReservationsViewModel(
@@ -41,6 +44,26 @@ class AdminReservationsViewModel(
     fun onTabSelected(index: Int) = _uiState.update { it.copy(selectedTab = index) }
 
     fun onSearchQueryChange(query: String) = _uiState.update { it.copy(searchQuery = query) }
+
+    fun onCancelRequest(reservation: Reservation) =
+        _uiState.update { it.copy(showCancelDialog = reservation) }
+
+    fun onDismissCancel() =
+        _uiState.update { it.copy(showCancelDialog = null) }
+
+    fun cancelReservation(reservation: Reservation, reason: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCancelling = true) }
+            reservationRepository.cancelReservationByAdmin(
+                reservation = reservation,
+                reason = reason
+            ).onSuccess {
+                _uiState.update { it.copy(isCancelling = false, showCancelDialog = null) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isCancelling = false, error = e.message) }
+            }
+        }
+    }
 
     fun filteredReservations(): List<Reservation> {
         val q = _uiState.value.searchQuery

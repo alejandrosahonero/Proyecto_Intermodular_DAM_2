@@ -31,10 +31,22 @@ object NotificationHelper {
         date: String,
         startTime: String
     ) {
+        showNotification(
+            context,
+            "Recordatorio de Reserva",
+            "Tienes una reserva en $courtName el $date a las $startTime"
+        )
+    }
+
+    fun showNotification(
+        context: Context,
+        title: String,
+        message: String
+    ) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Recordatorio de Reserva")
-            .setContentText("Tienes una reserva en $courtName el $date a las $startTime")
+            .setContentTitle(title)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()

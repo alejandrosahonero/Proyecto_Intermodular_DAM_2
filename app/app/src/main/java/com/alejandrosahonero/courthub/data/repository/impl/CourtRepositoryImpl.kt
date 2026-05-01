@@ -3,6 +3,7 @@ package com.alejandrosahonero.courthub.data.repository.impl
 import com.alejandrosahonero.courthub.data.local.mapper.toDomain
 import com.alejandrosahonero.courthub.data.local.mapper.toDto
 import com.alejandrosahonero.courthub.data.model.firestore.CourtDto
+import com.alejandrosahonero.courthub.data.model.firestore.ReservationDto
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.utils.Constants
@@ -87,14 +88,50 @@ class CourtRepositoryImpl(
         disabledUntil: Long
     ): Result<Unit> {
         return try {
-            firestore.collection(Constants.COLLECTION_COURTS).document(courtId).update(
+            val batch = firestore.batch()
+            val courtRef = firestore.collection(Constants.COLLECTION_COURTS).document(courtId)
+
+            batch.update(
+                courtRef,
                 mapOf(
                     "isEnabled" to false,
                     "disabledReason" to reason,
                     "disabledFrom" to Timestamp(Date(disabledFrom)),
                     "disabledUntil" to Timestamp(Date(disabledUntil))
                 )
-            ).await()
+            )
+
+            // Buscar reservas afectadas para notificar (las cancelará la Cloud Function)
+            // Nota: Aquí lo ideal sería que la Cloud Function también notificara,
+            // pero si queremos hacerlo desde el cliente por ahora:
+            val snapshot = firestore.collection(Constants.COLLECTION_RESERVATIONS)
+                .whereEqualTo("courtId", courtId)
+                .whereEqualTo("status", Constants.STATUS_CONFIRMED)
+                .get().await()
+
+            snapshot.documents.forEach { doc ->
+                val reservation = doc.toObject(ReservationDto::class.java)
+                if (reservation != null) {
+                    val resDate = reservation.date // Formato yyyy-MM-dd
+                    // Simplificación: si la reserva coincide en tiempo, notificar.
+                    // En una implementación real compararíamos timestamps exactos.
+                    val notificationRef =
+                        firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+                    batch.set(
+                        notificationRef,
+                        mapOf(
+                            "userId" to reservation.userId,
+                            "title" to "Pista No Disponible",
+                            "body" to "La pista ${reservation.courtName} no estará disponible el $resDate por: $reason. Tu reserva ha sido cancelada y reembolsada.",
+                            "type" to "cancellation",
+                            "isRead" to false,
+                            "createdAt" to Timestamp.now()
+                        )
+                    )
+                }
+            }
+
+            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

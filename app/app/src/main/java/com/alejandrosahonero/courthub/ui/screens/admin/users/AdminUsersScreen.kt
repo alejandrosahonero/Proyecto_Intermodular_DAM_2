@@ -73,6 +73,7 @@ fun AdminUsersScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as CourtHubApp
     val viewModel: AdminUsersViewModel = viewModel(
         factory = AdminUsersViewModel.factory(
+            app,
             app.container.firestore,
             app.container.authRepository,
             app.container.notificationRepository
