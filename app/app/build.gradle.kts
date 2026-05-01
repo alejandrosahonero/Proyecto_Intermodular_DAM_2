@@ -90,4 +90,5 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.barcode)
     implementation(libs.zxing.core)
+    implementation(libs.androidx.work.runtime)
 }
