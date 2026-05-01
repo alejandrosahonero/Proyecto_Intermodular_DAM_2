@@ -8,6 +8,7 @@ data class User(
     val role: UserRole = UserRole.CLIENT,
     val fcmToken: String = "",
     val notificationsEnabled: Boolean = true,
+    val isEnabled: Boolean = true,
     val createdAt: Long = 0L // epoch millis
 )
 

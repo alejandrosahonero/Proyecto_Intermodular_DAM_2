@@ -133,6 +133,16 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update("isEnabled", enabled).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit> {
         return try {
             firestore.collection("users").document(uid)

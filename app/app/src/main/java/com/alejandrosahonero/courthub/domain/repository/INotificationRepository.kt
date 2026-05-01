@@ -14,4 +14,10 @@ interface INotificationRepository {
 
     // Cuenta las no leídas para el badge de la barra de navegación
     fun getUnreadCount(userId: String): Flow<Int>
+
+    suspend fun sendNotificationToUser(
+        userId: String,
+        title: String,
+        body: String
+    ): Result<Unit>
 }

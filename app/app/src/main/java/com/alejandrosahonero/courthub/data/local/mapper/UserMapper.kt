@@ -13,6 +13,7 @@ fun UserDto.toDomain(uid: String): User = User(
     role = UserRole.fromString(role),
     fcmToken = fcmToken,
     notificationsEnabled = notificationsEnabled,
+    isEnabled = isEnabled,
     createdAt = createdAt?.toDate()?.time ?: 0L
 )
 
@@ -24,6 +25,7 @@ fun User.toDto(): UserDto = UserDto(
     role = role.value,
     fcmToken = fcmToken,
     notificationsEnabled = notificationsEnabled,
+    isEnabled = isEnabled,
     createdAt = com.google.firebase.Timestamp(
         java.util.Date(createdAt)
     )
@@ -37,6 +39,7 @@ fun UserEntity.toDomain(): User = User(
     role = UserRole.fromString(role),
     fcmToken = fcmToken,
     notificationsEnabled = notificationsEnabled,
+    isEnabled = isEnabled,
     createdAt = createdAt
 )
 
@@ -48,5 +51,6 @@ fun User.toEntity(): UserEntity = UserEntity(
     role = role.value,
     fcmToken = fcmToken,
     notificationsEnabled = notificationsEnabled,
+    isEnabled = isEnabled,
     createdAt = createdAt
 )

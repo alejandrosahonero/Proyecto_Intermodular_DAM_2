@@ -21,5 +21,7 @@ interface IAuthRepository {
 
     suspend fun updateNotificationsEnabled(uid: String, enabled: Boolean): Result<Unit>
 
+    suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit>
+
     suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit>
 }
