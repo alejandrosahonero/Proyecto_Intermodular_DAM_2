@@ -109,7 +109,8 @@ class NotificationRepositoryImpl(
     override suspend fun sendNotificationToUser(
         userId: String,
         title: String,
-        body: String
+        body: String,
+        type: String
     ): Result<Unit> {
         return try {
             firestore.collection(Constants.COLLECTION_NOTIFICATIONS).add(
@@ -117,7 +118,7 @@ class NotificationRepositoryImpl(
                     "userId" to userId,
                     "title" to title,
                     "body" to body,
-                    "type" to "reminder",
+                    "type" to type,
                     "isRead" to false,
                     "createdAt" to com.google.firebase.Timestamp.now()
                 )

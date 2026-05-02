@@ -20,6 +20,7 @@ interface INotificationRepository {
     suspend fun sendNotificationToUser(
         userId: String,
         title: String,
-        body: String
+        body: String,
+        type: String = "reminder"
     ): Result<Unit>
 }

@@ -184,8 +184,27 @@ class AuthRepositoryImpl(
 
     override suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit> {
         return try {
-            firestore.collection("users").document(uid)
-                .update("isEnabled", enabled).await()
+            val batch = firestore.batch()
+            val userRef = firestore.collection("users").document(uid)
+
+            batch.update(userRef, "isEnabled", enabled)
+
+            // Notificación al Administrador (historial)
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            val action = if (enabled) "habilitado" else "deshabilitado"
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (firebaseAuth.currentUser?.uid ?: ""),
+                    "title" to "Usuario $action",
+                    "body" to "Has $action al usuario con ID $uid.",
+                    "type" to "maintenance",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

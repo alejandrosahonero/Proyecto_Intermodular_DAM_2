@@ -19,7 +19,8 @@ import java.util.Date
 
 class ReservationRepositoryImpl(
     private val firestore: FirebaseFirestore,
-    private val reservationDao: ReservationDao
+    private val reservationDao: ReservationDao,
+    private val auth: com.google.firebase.auth.FirebaseAuth
 ) : IReservationRepository {
 
     override fun getUserReservations(userId: String): Flow<List<Reservation>> =
@@ -71,14 +72,36 @@ class ReservationRepositoryImpl(
     ): Result<Unit> {
         return try {
             val cancelledAt = System.currentTimeMillis()
-            firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservationId).update(
+            val batch = firestore.batch()
+            val reservationRef =
+                firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservationId)
+
+            batch.update(
+                reservationRef,
                 mapOf(
                     "status" to Constants.STATUS_CANCELLED,
                     "cancellationReason" to reason,
                     "accessCodeStatus" to Constants.ACCESS_INVALID,
                     "cancelledAt" to Timestamp(Date(cancelledAt))
                 )
-            ).await()
+            )
+
+            // Notificación para el Administrador
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (auth.currentUser?.uid ?: ""),
+                    "title" to "Reserva Cancelada",
+                    "body" to "Has cancelado tu reserva (ID: $reservationId). Motivo: $reason",
+                    "type" to "cancellation",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            batch.commit().await()
+            
             reservationDao.updateReservationStatus(
                 reservationId = reservationId,
                 status = Constants.STATUS_CANCELLED,
@@ -97,26 +120,49 @@ class ReservationRepositoryImpl(
     ): Result<Unit> {
         return try {
             val cancelledAt = System.currentTimeMillis()
-            firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservation.id).update(
+            val batch = firestore.batch()
+            val reservationRef =
+                firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservation.id)
+
+            batch.update(
+                reservationRef,
                 mapOf(
                     "status" to Constants.STATUS_CANCELLED,
                     "cancellationReason" to reason,
                     "accessCodeStatus" to Constants.ACCESS_INVALID,
                     "cancelledAt" to Timestamp(Date(cancelledAt))
                 )
-            ).await()
+            )
 
-            // Notificación al usuario en Firestore
-            firestore.collection(Constants.COLLECTION_NOTIFICATIONS).add(
-                mapOf(
+            // Notificación al usuario
+            val userNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            batch.set(
+                userNotificationRef, mapOf(
                     "userId" to reservation.userId,
                     "title" to "Reserva Cancelada",
-                    "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} (${reservation.startTime} - ${reservation.endTime}) ha sido cancelada por un administrador. Motivo: $reason. El importe ha sido reembolsado.",
+                    "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} ha sido cancelada por un administrador. Motivo: $reason.",
                     "type" to "cancellation",
                     "isRead" to false,
                     "createdAt" to Timestamp.now()
                 )
-            ).await()
+            )
+
+            // Notificación al Administrador (historial)
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (auth.currentUser?.uid ?: ""),
+                    "title" to "Reserva Cancelada (Admin)",
+                    "body" to "Has cancelado la reserva de ${reservation.userName} en ${reservation.courtName}. Motivo: $reason.",
+                    "type" to "cancellation",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            batch.commit().await()
 
             reservationDao.updateReservationStatus(
                 reservationId = reservation.id,

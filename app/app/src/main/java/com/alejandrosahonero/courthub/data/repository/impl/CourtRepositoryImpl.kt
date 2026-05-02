@@ -16,7 +16,8 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 class CourtRepositoryImpl(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: com.google.firebase.auth.FirebaseAuth
 ) : ICourtRepository {
 
     /**
@@ -101,9 +102,21 @@ class CourtRepositoryImpl(
                 )
             )
 
-            // Buscar reservas afectadas para notificar (las cancelará la Cloud Function)
-            // Nota: Aquí lo ideal sería que la Cloud Function también notificara,
-            // pero si queremos hacerlo desde el cliente por ahora:
+            // Notificación al Administrador (historial)
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (auth.currentUser?.uid ?: ""),
+                    "title" to "Pista Deshabilitada",
+                    "body" to "Has deshabilitado la pista con ID $courtId. Motivo: $reason.",
+                    "type" to "maintenance",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            // Buscar reservas afectadas para notificar
             val snapshot = firestore.collection(Constants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("courtId", courtId)
                 .whereEqualTo("status", Constants.STATUS_CONFIRMED)
@@ -112,9 +125,7 @@ class CourtRepositoryImpl(
             snapshot.documents.forEach { doc ->
                 val reservation = doc.toObject(ReservationDto::class.java)
                 if (reservation != null) {
-                    val resDate = reservation.date // Formato yyyy-MM-dd
-                    // Simplificación: si la reserva coincide en tiempo, notificar.
-                    // En una implementación real compararíamos timestamps exactos.
+                    val resDate = reservation.date
                     val notificationRef =
                         firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
                     batch.set(
@@ -122,7 +133,7 @@ class CourtRepositoryImpl(
                         mapOf(
                             "userId" to reservation.userId,
                             "title" to "Pista No Disponible",
-                            "body" to "La pista ${reservation.courtName} no estará disponible el $resDate por: $reason. Tu reserva ha sido cancelada y reembolsada.",
+                            "body" to "La pista ${reservation.courtName} no estará disponible el $resDate por: $reason. Tu reserva ha sido cancelada.",
                             "type" to "cancellation",
                             "isRead" to false,
                             "createdAt" to Timestamp.now()
@@ -140,14 +151,33 @@ class CourtRepositoryImpl(
 
     override suspend fun enableCourt(courtId: String): Result<Unit> {
         return try {
-            firestore.collection(Constants.COLLECTION_COURTS).document(courtId).update(
-                mapOf(
+            val batch = firestore.batch()
+            val courtRef = firestore.collection(Constants.COLLECTION_COURTS).document(courtId)
+
+            batch.update(
+                courtRef, mapOf(
                     "isEnabled" to true,
                     "disabledReason" to null,
                     "disabledFrom" to null,
                     "disabledUntil" to null
                 )
-            ).await()
+            )
+
+            // Notificación al Administrador (historial)
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (auth.currentUser?.uid ?: ""),
+                    "title" to "Pista Habilitada",
+                    "body" to "La pista con ID $courtId vuelve a estar disponible.",
+                    "type" to "maintenance",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
