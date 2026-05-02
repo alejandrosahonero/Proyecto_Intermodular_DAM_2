@@ -6,10 +6,12 @@ import com.alejandrosahonero.courthub.data.repository.impl.AuthRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.CourtRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.NotificationRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.ReservationRepositoryImpl
+import com.alejandrosahonero.courthub.data.repository.impl.SupportRepositoryImpl
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
+import com.alejandrosahonero.courthub.domain.repository.ISupportRepository
 import com.alejandrosahonero.courthub.domain.usecase.access.GenerateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.access.ValidateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.auth.LoginUseCase
@@ -57,6 +59,8 @@ class AppContainer(context: Context) {
         firestore = firestore,
         notificationDao = notificationDao
     )
+
+    val supportRepository: ISupportRepository = SupportRepositoryImpl(firestore)
 
     // ── Use Cases — Auth ──────────────────────────────────────────────────────
     val loginUseCase = LoginUseCase(authRepository)

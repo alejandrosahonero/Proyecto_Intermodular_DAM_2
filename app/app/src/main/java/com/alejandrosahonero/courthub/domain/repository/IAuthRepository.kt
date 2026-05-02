@@ -9,6 +9,8 @@ interface IAuthRepository {
 
     suspend fun login(email: String, password: String): Result<User>
 
+    suspend fun loginWithGoogle(idToken: String): Result<User>
+
     suspend fun register(
         name: String,
         email: String,
@@ -18,4 +20,10 @@ interface IAuthRepository {
     suspend fun logout(): Result<Unit>
 
     suspend fun updateFcmToken(uid: String, token: String): Result<Unit>
+
+    suspend fun updateNotificationsEnabled(uid: String, enabled: Boolean): Result<Unit>
+
+    suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit>
+
+    suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit>
 }

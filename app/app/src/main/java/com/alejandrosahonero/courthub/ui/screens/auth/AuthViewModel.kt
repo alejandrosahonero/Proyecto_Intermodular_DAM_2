@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.alejandrosahonero.courthub.domain.model.User
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.usecase.auth.LoginUseCase
 import com.alejandrosahonero.courthub.domain.usecase.auth.RegisterUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,8 @@ data class AuthUiState(
 
 class AuthViewModel(
     private val loginUseCase: LoginUseCase,
-    private val registerUseCase: RegisterUseCase
+    private val registerUseCase: RegisterUseCase,
+    private val authRepository: IAuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -56,14 +58,28 @@ class AuthViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            authRepository.loginWithGoogle(idToken)
+                .onSuccess { user ->
+                    _uiState.update { it.copy(isLoading = false, loggedUser = user) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
+    }
+
     companion object {
         fun factory(
             loginUseCase: LoginUseCase,
-            registerUseCase: RegisterUseCase
+            registerUseCase: RegisterUseCase,
+            authRepository: IAuthRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AuthViewModel(loginUseCase, registerUseCase) as T
+                AuthViewModel(loginUseCase, registerUseCase, authRepository) as T
         }
     }
 }

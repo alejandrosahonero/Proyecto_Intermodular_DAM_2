@@ -11,7 +11,6 @@ import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.usecase.access.GenerateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.reservation.CreateReservationUseCase
-import com.alejandrosahonero.courthub.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -29,6 +28,8 @@ class PaymentViewModel(
     private val courtId: String,
     private val date: String,
     private val startTime: String,
+    private val endTime: String,
+    private val hours: Int,
     private val courtRepository: ICourtRepository,
     private val createReservationUseCase: CreateReservationUseCase,
     private val generateAccessCodeUseCase: GenerateAccessCodeUseCase,
@@ -60,7 +61,6 @@ class PaymentViewModel(
             _uiState.update { it.copy(isPaying = true, error = null) }
             val user = authRepository.getCurrentUser()
             val accessCode = generateAccessCodeUseCase()
-            val endTime = DateUtils.endTimeFromStart(startTime)
             val reservation = Reservation(
                 userId = user?.uid ?: "",
                 userName = user?.name ?: "",
@@ -70,11 +70,11 @@ class PaymentViewModel(
                 startTime = startTime,
                 endTime = endTime,
                 status = ReservationStatus.CONFIRMED,
-                totalPrice = court.pricePerHour,
+                totalPrice = court.pricePerHour * hours,
                 paymentId = "stripe_sandbox_${System.currentTimeMillis()}",
                 accessCode = accessCode,
                 accessCodeStatus = AccessCodeStatus.VALID,
-                qrData = "COURTHUB:${courtId}:${date}:${startTime}:${accessCode}",
+                qrData = "COURTHUB:${courtId}:${date}:${startTime}:${endTime}:${accessCode}",
                 createdAt = System.currentTimeMillis()
             )
             createReservationUseCase(reservation)
@@ -94,7 +94,11 @@ class PaymentViewModel(
 
     companion object {
         fun factory(
-            courtId: String, date: String, startTime: String,
+            courtId: String,
+            date: String,
+            startTime: String,
+            endTime: String,
+            hours: Int,
             courtRepository: ICourtRepository,
             createReservationUseCase: CreateReservationUseCase,
             generateAccessCodeUseCase: GenerateAccessCodeUseCase,
@@ -103,8 +107,9 @@ class PaymentViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 PaymentViewModel(
-                    courtId, date, startTime, courtRepository,
-                    createReservationUseCase, generateAccessCodeUseCase, authRepository
+                    courtId, date, startTime, endTime, hours,
+                    courtRepository, createReservationUseCase,
+                    generateAccessCodeUseCase, authRepository
                 ) as T
         }
     }

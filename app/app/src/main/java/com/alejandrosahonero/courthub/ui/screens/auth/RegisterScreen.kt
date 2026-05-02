@@ -51,6 +51,7 @@ import com.alejandrosahonero.courthub.domain.model.UserRole
 import com.alejandrosahonero.courthub.ui.navigation.Screen
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.GoogleSignInHelper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,7 +61,8 @@ fun RegisterScreen(navController: NavController) {
     val viewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.factory(
             loginUseCase = app.container.loginUseCase,
-            registerUseCase = app.container.registerUseCase
+            registerUseCase = app.container.registerUseCase,
+            authRepository = app.container.authRepository
         )
     )
 
@@ -74,6 +76,8 @@ fun RegisterScreen(navController: NavController) {
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    val googleSignInHelper = remember { GoogleSignInHelper(context) }
 
     LaunchedEffect(uiState.loggedUser) {
         uiState.loggedUser?.let { user ->
@@ -211,7 +215,14 @@ fun RegisterScreen(navController: NavController) {
 
             GoogleSignInButton(
                 text = "Registrarse con Google",
-                onClick = { }
+                onClick = {
+                    scope.launch {
+                        val idToken = googleSignInHelper.signIn()
+                        if (idToken != null) {
+                            viewModel.loginWithGoogle(idToken)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

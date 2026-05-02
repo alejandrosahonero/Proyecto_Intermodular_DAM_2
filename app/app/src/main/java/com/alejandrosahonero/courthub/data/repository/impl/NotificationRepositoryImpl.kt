@@ -54,4 +54,26 @@ class NotificationRepositoryImpl(
 
     override fun getUnreadCount(userId: String): Flow<Int> =
         notificationDao.getUnreadCount(userId)
+
+    override suspend fun sendNotificationToUser(
+        userId: String,
+        title: String,
+        body: String
+    ): Result<Unit> {
+        return try {
+            firestore.collection("notifications").add(
+                mapOf(
+                    "userId" to userId,
+                    "title" to title,
+                    "body" to body,
+                    "type" to "reminder",
+                    "isRead" to false,
+                    "createdAt" to com.google.firebase.Timestamp.now()
+                )
+            ).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

@@ -33,13 +33,13 @@ class AdminScannerViewModel(
     fun onQrScanned(qrData: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(scannerState = ScannerState.Loading) }
-            // qrData formato: COURTHUB:{courtId}:{date}:{startTime}:{accessCode}
+            // qrData formato: COURTHUB:{courtId}:{date}:{startTime}:{endTime}:{accessCode}
             val parts = qrData.split(":")
-            if (parts.size < 5 || parts[0] != "COURTHUB") {
+            if (parts.size < 6 || parts[0] != "COURTHUB") {
                 _uiState.update { it.copy(scannerState = ScannerState.Failure("QR inválido")) }
                 return@launch
             }
-            val accessCode = parts[4]
+            val accessCode = parts[5]
             reservationRepository.getAllReservations()
                 .collect { reservations ->
                     val reservation = reservations.firstOrNull {

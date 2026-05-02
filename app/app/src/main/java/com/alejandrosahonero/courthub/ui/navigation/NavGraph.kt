@@ -93,7 +93,9 @@ fun NavGraph() {
             val courtId = backStackEntry.arguments?.getString("courtId") ?: ""
             val date = backStackEntry.arguments?.getString("date") ?: ""
             val startTime = backStackEntry.arguments?.getString("startTime") ?: ""
-            PaymentScreen(courtId, date, startTime, navController)
+            val endTime = backStackEntry.arguments?.getString("endTime") ?: ""
+            val hours = backStackEntry.arguments?.getString("hours")?.toIntOrNull() ?: 1
+            PaymentScreen(courtId, date, startTime, endTime, hours, navController)
         }
 
         // ── Admin ─────────────────────────────────────────────────────────────

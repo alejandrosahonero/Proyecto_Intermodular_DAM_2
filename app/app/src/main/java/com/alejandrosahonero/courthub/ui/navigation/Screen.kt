@@ -22,10 +22,16 @@ sealed class Screen(val route: String) {
         fun createRoute(courtId: String) = "reservation_step/$courtId"
     }
 
-    // Pago — recibe courtId, date, startTime
-    data object Payment : Screen("payment/{courtId}/{date}/{startTime}") {
-        fun createRoute(courtId: String, date: String, startTime: String) =
-            "payment/$courtId/$date/$startTime"
+    // Pago — recibe courtId, date, startTime, endTime, hours
+    data object Payment : Screen("payment/{courtId}/{date}/{startTime}/{endTime}/{hours}") {
+        fun createRoute(
+            courtId: String,
+            date: String,
+            startTime: String,
+            endTime: String,
+            hours: Int
+        ) =
+            "payment/$courtId/$date/$startTime/$endTime/$hours"
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────────

@@ -25,7 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -188,11 +187,14 @@ fun CourtDetailScreen(
                 onContinue = {
                     val date = uiState.selectedDate
                         .format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    val slot = uiState.selectedSlot ?: return@ReservationStepSheet
+                    val startTime =
+                        uiState.selectedSlots.firstOrNull() ?: return@ReservationStepSheet
+                    val endTime = viewModel.getEndTime()
+                    val hours = uiState.selectedSlots.size
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         showSheet = false
                         navController.navigate(
-                            Screen.Payment.createRoute(court.id, date, slot)
+                            Screen.Payment.createRoute(court.id, date, startTime, endTime, hours)
                         )
                     }
                 }
@@ -271,7 +273,7 @@ private fun ReservationStepSheet(
         } else {
             SlotGrid(
                 slots = uiState.slots,
-                selectedSlot = uiState.selectedSlot,
+                selectedSlots = uiState.selectedSlots,
                 onSlotSelected = onSlotSelected
             )
         }
@@ -280,7 +282,7 @@ private fun ReservationStepSheet(
 
         Button(
             onClick = onContinue,
-            enabled = uiState.selectedSlot != null,
+            enabled = uiState.selectedSlots.isNotEmpty(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -291,8 +293,11 @@ private fun ReservationStepSheet(
             )
         ) {
             Text(
-                text = if (uiState.selectedSlot != null)
-                    "Continuar al Pago" else "Selecciona un horario",
+                text = if (uiState.selectedSlots.isNotEmpty())
+                    "Continuar (${uiState.selectedSlots.size}h — ${uiState.selectedSlots.first()} a ${
+                        "%02d:00".format(uiState.selectedSlots.last().split(":")[0].toInt() + 1)
+                    })"
+                else "Selecciona un horario",
                 style = MaterialTheme.typography.titleMedium
             )
         }
@@ -375,7 +380,7 @@ private fun DateSelector(
 @Composable
 private fun SlotGrid(
     slots: List<TimeSlot>,
-    selectedSlot: String?,
+    selectedSlots: List<String>,
     onSlotSelected: (String) -> Unit
 ) {
     LazyVerticalGrid(
@@ -386,7 +391,10 @@ private fun SlotGrid(
         contentPadding = PaddingValues(2.dp)
     ) {
         items(slots) { slot ->
-            val isSelected = slot.hour == selectedSlot
+            val isSelected = selectedSlots.contains(slot.hour)
+            val isFirst = selectedSlots.firstOrNull() == slot.hour
+            val isLast = selectedSlots.lastOrNull() == slot.hour
+
             val bgColor = when {
                 isSelected -> Red600
                 slot.isMaintenance -> Warning.copy(alpha = 0.15f)
@@ -405,45 +413,20 @@ private fun SlotGrid(
                     .clip(RoundedCornerShape(8.dp))
                     .background(bgColor)
                     .border(
-                        width = 1.dp,
-                        color = if (isSelected) Red600 else Outline,
+                        width = if (isFirst || isLast) 2.dp else 1.dp,
+                        color = if (isSelected) Red600.copy(alpha = 0.8f) else Outline,
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .clickable(enabled = slot.isAvailable) {
-                        onSlotSelected(slot.hour)
-                    }
+                    .clickable(enabled = slot.isAvailable) { onSlotSelected(slot.hour) }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (slot.isMaintenance || !slot.isAvailable) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        if (!slot.isAvailable && !slot.isMaintenance) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = TextHint,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-                        Text(
-                            text = slot.hour,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = textColor,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    Text(
-                        text = slot.hour,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = textColor,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(
+                    text = slot.hour,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = textColor,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

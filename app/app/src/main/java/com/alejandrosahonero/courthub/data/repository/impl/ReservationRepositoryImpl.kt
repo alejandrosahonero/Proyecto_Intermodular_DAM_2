@@ -90,6 +90,44 @@ class ReservationRepositoryImpl(
         }
     }
 
+    override suspend fun cancelReservationByAdmin(
+        reservation: Reservation,
+        reason: String
+    ): Result<Unit> {
+        return try {
+            val cancelledAt = System.currentTimeMillis()
+            firestore.collection(Constants.COLLECTION_RESERVATIONS).document(reservation.id).update(
+                mapOf(
+                    "status" to Constants.STATUS_CANCELLED,
+                    "cancellationReason" to reason,
+                    "accessCodeStatus" to Constants.ACCESS_INVALID,
+                    "cancelledAt" to Timestamp(Date(cancelledAt))
+                )
+            ).await()
+
+            // Notificación al usuario en Firestore
+            firestore.collection(Constants.COLLECTION_NOTIFICATIONS).add(
+                mapOf(
+                    "userId" to reservation.userId,
+                    "title" to "Reserva Cancelada",
+                    "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} (${reservation.startTime} - ${reservation.endTime}) ha sido cancelada por un administrador. Motivo: $reason. El importe ha sido reembolsado.",
+                    "type" to "cancellation",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            ).await()
+
+            reservationDao.updateReservationStatus(
+                reservationId = reservation.id,
+                status = Constants.STATUS_CANCELLED,
+                cancelledAt = cancelledAt
+            )
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun markAccessCodeAsUsed(reservationId: String): Result<Unit> {
         return try {
             val scannedAt = System.currentTimeMillis()

@@ -20,7 +20,7 @@ data class CourtDetailUiState(
     val isLoading: Boolean = true,
     val selectedDate: LocalDate = LocalDate.now(),
     val slots: List<TimeSlot> = emptyList(),
-    val selectedSlot: String? = null,
+    val selectedSlots: List<String> = emptyList(),
     val slotsLoading: Boolean = false,
     val error: String? = null
 )
@@ -52,12 +52,44 @@ class CourtDetailViewModel(
     }
 
     fun onDateSelected(date: LocalDate) {
-        _uiState.update { it.copy(selectedDate = date, selectedSlot = null) }
+        _uiState.update { it.copy(selectedDate = date, selectedSlots = emptyList()) }
         loadSlots()
     }
 
     fun onSlotSelected(hour: String) {
-        _uiState.update { it.copy(selectedSlot = hour) }
+        val current = _uiState.value.selectedSlots.toMutableList()
+        val slots = _uiState.value.slots
+
+        if (current.contains(hour)) {
+            // Deseleccionar — elimina desde ese punto hasta el final
+            val index = current.indexOf(hour)
+            _uiState.update { it.copy(selectedSlots = current.take(index)) }
+            return
+        }
+
+        if (current.isEmpty()) {
+            _uiState.update { it.copy(selectedSlots = listOf(hour)) }
+            return
+        }
+
+        // Solo permitimos slots contiguos
+        val availableHours = slots.filter { it.isAvailable }.map { it.hour }
+        val lastSelected = current.last()
+        val lastIndex = availableHours.indexOf(lastSelected)
+        val newIndex = availableHours.indexOf(hour)
+
+        if (newIndex == lastIndex + 1) {
+            _uiState.update { it.copy(selectedSlots = current + hour) }
+        } else {
+            // Si no es contiguo, reinicia con el nuevo slot
+            _uiState.update { it.copy(selectedSlots = listOf(hour)) }
+        }
+    }
+
+    fun getEndTime(): String {
+        val lastSlot = _uiState.value.selectedSlots.lastOrNull() ?: return ""
+        val hour = lastSlot.split(":")[0].toInt()
+        return "%02d:00".format(hour + 1)
     }
 
     private fun loadSlots() {

@@ -10,6 +10,7 @@ import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.utils.Constants
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -51,6 +52,54 @@ class AuthRepositoryImpl(
                 ?: return Result.failure(Exception("Usuario no encontrado en Firestore"))
 
             val user = dto.toDomain(firebaseUser.uid)
+            userDao.insertUser(user.toEntity())
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun loginWithGoogle(idToken: String): Result<User> {
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val result = firebaseAuth.signInWithCredential(credential).await()
+            val firebaseUser = result.user
+                ?: return Result.failure(Exception("Error al iniciar sesión con Google"))
+
+            // Verificamos si el usuario ya existe en Firestore
+            val docRef = firestore.collection("users").document(firebaseUser.uid)
+            val doc = docRef.get().await()
+
+            val user = if (!doc.exists()) {
+                // Nuevo usuario — lo creamos
+                val newUser = User(
+                    uid = firebaseUser.uid,
+                    name = firebaseUser.displayName ?: "",
+                    email = firebaseUser.email ?: "",
+                    role = UserRole.CLIENT,
+                    fcmToken = "",
+                    createdAt = System.currentTimeMillis()
+                )
+                docRef.set(
+                    mapOf(
+                        "uid" to newUser.uid,
+                        "name" to newUser.name,
+                        "email" to newUser.email,
+                        "phone" to "",
+                        "role" to newUser.role.value,
+                        "fcmToken" to "",
+                        "notificationsEnabled" to true,
+                        "isEnabled" to true,
+                        "createdAt" to Timestamp(java.util.Date(newUser.createdAt))
+                    )
+                ).await()
+                newUser
+            } else {
+                val dto = doc.toObject(UserDto::class.java)
+                    ?: return Result.failure(Exception("Error al leer usuario"))
+                dto.toDomain(firebaseUser.uid)
+            }
+
             userDao.insertUser(user.toEntity())
             Result.success(user)
         } catch (e: Exception) {
@@ -115,6 +164,42 @@ class AuthRepositoryImpl(
             firestore.collection(Constants.COLLECTION_USERS)
                 .document(uid)
                 .update("fcmToken", token).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateNotificationsEnabled(uid: String, enabled: Boolean): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update("notificationsEnabled", enabled).await()
+            val local = userDao.getUserByUid(uid)
+            if (local != null) userDao.insertUser(local.copy(notificationsEnabled = enabled))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update("isEnabled", enabled).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(uid)
+                .update(mapOf("name" to name, "phone" to phone)).await()
+            val local = userDao.getUserByUid(uid)
+            if (local != null) {
+                userDao.insertUser(local.copy(name = name, phone = phone))
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

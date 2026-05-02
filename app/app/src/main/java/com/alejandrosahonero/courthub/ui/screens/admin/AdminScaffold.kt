@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.SportsTennis
@@ -40,6 +41,7 @@ val adminNavItems = listOf(
     AdminNavItem("Pistas", Icons.Default.SportsTennis, Screen.AdminCourts),
     AdminNavItem("Reservas", Icons.Default.DateRange, Screen.AdminReservations),
     AdminNavItem("QR", Icons.Default.QrCodeScanner, Screen.AdminScanner),
+    AdminNavItem("Usuarios", Icons.Default.Group, Screen.AdminUsers),
     AdminNavItem("Alertas", Icons.Default.Notifications, Screen.AdminNotifications)
 )
 

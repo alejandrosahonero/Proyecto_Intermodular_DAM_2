@@ -20,6 +20,11 @@ interface IReservationRepository {
         reason: String
     ): Result<Unit>
 
+    suspend fun cancelReservationByAdmin(
+        reservation: Reservation,
+        reason: String
+    ): Result<Unit>
+
     /**
      * Marca el código de acceso como USED tras el escaneo exitoso del admin.
      * También guarda el timestamp de scannedAt.
