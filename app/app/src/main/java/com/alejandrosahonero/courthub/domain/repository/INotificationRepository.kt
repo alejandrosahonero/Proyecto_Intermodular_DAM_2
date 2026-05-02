@@ -12,6 +12,8 @@ interface INotificationRepository {
 
     suspend fun markAllAsRead(userId: String): Result<Unit>
 
+    suspend fun deleteAllNotifications(userId: String): Result<Unit>
+
     // Cuenta las no leídas para el badge de la barra de navegación
     fun getUnreadCount(userId: String): Flow<Int>
 

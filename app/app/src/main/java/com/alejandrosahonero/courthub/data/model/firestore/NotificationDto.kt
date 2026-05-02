@@ -8,7 +8,10 @@ data class NotificationDto(
     val title: String = "",
     val body: String = "",
     val type: String = "",
-    val isRead: Boolean = false,
+    
+    @get:PropertyName("isRead")
+    @set:PropertyName("isRead")
+    var isRead: Boolean = false,
 
     @get:PropertyName("createdAt")
     @set:PropertyName("createdAt")

@@ -33,6 +33,7 @@ import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
 import com.alejandrosahonero.courthub.ui.screens.client.notifications.NotificationsViewModel
 import com.alejandrosahonero.courthub.ui.screens.shared.NotificationItem
+import com.alejandrosahonero.courthub.ui.theme.Error
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 
@@ -68,13 +69,23 @@ fun AdminNotificationsScreen(navController: NavController) {
                         )
                     }
                 }
-                if (uiState.unreadCount > 0) {
-                    Text(
-                        "Marcar todas leídas",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Red600,
-                        modifier = Modifier.clickable { viewModel.markAllAsRead() }
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (uiState.unreadCount > 0) {
+                        Text(
+                            "Marcar leídas",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Red600,
+                            modifier = Modifier.clickable { viewModel.markAllAsRead() }
+                        )
+                    }
+                    if (uiState.notifications.isNotEmpty()) {
+                        Text(
+                            "Borrar todas",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Error,
+                            modifier = Modifier.clickable { viewModel.deleteAll() }
+                        )
+                    }
                 }
             }
 

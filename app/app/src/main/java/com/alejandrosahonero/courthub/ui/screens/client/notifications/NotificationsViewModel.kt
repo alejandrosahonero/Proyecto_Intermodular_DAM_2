@@ -58,6 +58,13 @@ class NotificationsViewModel(
         }
     }
 
+    fun deleteAll() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.deleteAllNotifications(user.uid)
+        }
+    }
+
     companion object {
         fun factory(
             notificationRepository: INotificationRepository,

@@ -78,6 +78,20 @@ class NotificationRepositoryImpl(
         }
     }
 
+    override suspend fun deleteAllNotifications(userId: String): Result<Unit> {
+        return try {
+            val snapshot = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
+                .whereEqualTo("userId", userId)
+                .get().await()
+            val batch = firestore.batch()
+            snapshot.documents.forEach { doc -> batch.delete(doc.reference) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override fun getUnreadCount(userId: String): Flow<Int> = callbackFlow {
         val listener = firestore.collection(Constants.COLLECTION_NOTIFICATIONS)
             .whereEqualTo("userId", userId)
