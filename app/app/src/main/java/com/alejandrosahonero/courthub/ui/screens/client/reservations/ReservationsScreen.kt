@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Warning
@@ -232,6 +233,42 @@ private fun ReservationCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = Red600
             )
+
+            if (reservation.status == ReservationStatus.CANCELLED
+                && !reservation.cancellationReason.isNullOrBlank()
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Error.copy(alpha = 0.08f))
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Error,
+                        modifier = Modifier
+                            .size(14.dp)
+                            .padding(top = 2.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column {
+                        Text(
+                            "Motivo de cancelación",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Error
+                        )
+                        Text(
+                            reservation.cancellationReason!!,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
 
             if (reservation.status == ReservationStatus.CONFIRMED) {
                 Spacer(modifier = Modifier.height(12.dp))

@@ -285,6 +285,42 @@ private fun AdminReservationCard(
                 color = Red600
             )
 
+            if (reservation.status == ReservationStatus.CANCELLED
+                && !reservation.cancellationReason.isNullOrBlank()
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Error.copy(alpha = 0.08f))
+                        .padding(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Error,
+                        modifier = Modifier
+                            .size(14.dp)
+                            .padding(top = 2.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Column {
+                        Text(
+                            "Motivo de cancelación",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Error
+                        )
+                        Text(
+                            reservation.cancellationReason!!,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
             if (reservation.status == ReservationStatus.CONFIRMED) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(

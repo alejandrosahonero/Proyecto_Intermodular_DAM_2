@@ -82,7 +82,8 @@ class ReservationRepositoryImpl(
             reservationDao.updateReservationStatus(
                 reservationId = reservationId,
                 status = Constants.STATUS_CANCELLED,
-                cancelledAt = cancelledAt
+                cancelledAt = cancelledAt,
+                reason = reason
             )
             Result.success(Unit)
         } catch (e: Exception) {
@@ -120,7 +121,8 @@ class ReservationRepositoryImpl(
             reservationDao.updateReservationStatus(
                 reservationId = reservation.id,
                 status = Constants.STATUS_CANCELLED,
-                cancelledAt = cancelledAt
+                cancelledAt = cancelledAt,
+                reason = reason
             )
             Result.success(Unit)
         } catch (e: Exception) {
