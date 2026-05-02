@@ -26,7 +26,8 @@ data class AdminUsersUiState(
     val isLoading: Boolean = true,
     val searchQuery: String = "",
     val showNotificationDialog: User? = null,
-    val error: String? = null
+    val error: String? = null,
+    val unreadCount: Int = 0
 )
 
 class AdminUsersViewModel(
@@ -41,6 +42,16 @@ class AdminUsersViewModel(
 
     init {
         loadUsers()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadUsers() {

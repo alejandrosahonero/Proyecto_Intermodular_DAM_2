@@ -70,14 +70,18 @@ fun AdminProfileScreen(navController: NavController) {
         factory = ProfileViewModel.factory(
             app.container.authRepository,
             app.container.logoutUseCase,
-            app.container.supportRepository
+            app.container.supportRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showSupportDialog by remember { mutableStateOf(false) }
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         if (uiState.isLoading) {
             Box(modifier = contentModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Red600)

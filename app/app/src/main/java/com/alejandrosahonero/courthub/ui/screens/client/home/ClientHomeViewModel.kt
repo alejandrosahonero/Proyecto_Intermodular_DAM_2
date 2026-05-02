@@ -22,13 +22,15 @@ data class ClientHomeUiState(
     val currentUser: User? = null,
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val unreadCount: Int = 0
 )
 
 class ClientHomeViewModel(
     private val getCourtsUseCase: GetCourtsUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val authRepository: IAuthRepository
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientHomeUiState())
@@ -37,6 +39,16 @@ class ClientHomeViewModel(
     init {
         loadCurrentUser()
         loadCourts()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadCurrentUser() {
@@ -107,11 +119,17 @@ class ClientHomeViewModel(
         fun factory(
             getCourtsUseCase: GetCourtsUseCase,
             logoutUseCase: LogoutUseCase,
-            authRepository: IAuthRepository
+            authRepository: IAuthRepository,
+            notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                ClientHomeViewModel(getCourtsUseCase, logoutUseCase, authRepository) as T
+                ClientHomeViewModel(
+                    getCourtsUseCase,
+                    logoutUseCase,
+                    authRepository,
+                    notificationRepository
+                ) as T
         }
     }
 }

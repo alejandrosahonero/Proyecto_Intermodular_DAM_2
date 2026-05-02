@@ -77,7 +77,8 @@ fun ReservationsScreen(navController: NavController) {
         factory = ReservationsViewModel.factory(
             app.container.getUserReservationsUseCase,
             app.container.cancelReservationUseCase,
-            app.container.authRepository
+            app.container.authRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -91,7 +92,10 @@ fun ReservationsScreen(navController: NavController) {
         }
     }
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    ClientScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Box(modifier = contentModifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))

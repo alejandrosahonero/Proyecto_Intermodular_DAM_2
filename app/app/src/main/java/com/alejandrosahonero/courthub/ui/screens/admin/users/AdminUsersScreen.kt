@@ -90,7 +90,10 @@ fun AdminUsersScreen(navController: NavController) {
         }
     }
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Box(modifier = contentModifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))

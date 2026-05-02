@@ -47,7 +47,10 @@ fun NotificationsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    ClientScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Column(modifier = contentModifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(16.dp))
 

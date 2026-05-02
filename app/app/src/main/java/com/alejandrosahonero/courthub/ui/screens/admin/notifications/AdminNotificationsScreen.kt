@@ -49,7 +49,10 @@ fun AdminNotificationsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Column(modifier = contentModifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(16.dp))
 

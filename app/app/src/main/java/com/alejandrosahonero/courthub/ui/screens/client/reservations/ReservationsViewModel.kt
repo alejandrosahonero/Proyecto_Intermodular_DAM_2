@@ -7,6 +7,7 @@ import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus.CONFIRMED
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.usecase.reservation.CancelReservationUseCase
 import com.alejandrosahonero.courthub.domain.usecase.reservation.GetUserReservationsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,13 +21,15 @@ data class ReservationsUiState(
     val selectedTab: Int = 0,
     val showAccessCodeDialog: Boolean = false,
     val selectedReservation: Reservation? = null,
-    val error: String? = null
+    val error: String? = null,
+    val unreadCount: Int = 0
 )
 
 class ReservationsViewModel(
     private val getUserReservationsUseCase: GetUserReservationsUseCase,
     private val cancelReservationUseCase: CancelReservationUseCase,
-    private val authRepository: IAuthRepository
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: INotificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReservationsUiState())
@@ -34,6 +37,16 @@ class ReservationsViewModel(
 
     init {
         loadReservations()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadReservations() {
@@ -76,13 +89,16 @@ class ReservationsViewModel(
         fun factory(
             getUserReservationsUseCase: GetUserReservationsUseCase,
             cancelReservationUseCase: CancelReservationUseCase,
-            authRepository: IAuthRepository
+            authRepository: IAuthRepository,
+            notificationRepository: INotificationRepository
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 ReservationsViewModel(
                     getUserReservationsUseCase,
-                    cancelReservationUseCase, authRepository
+                    cancelReservationUseCase,
+                    authRepository,
+                    notificationRepository
                 ) as T
         }
     }

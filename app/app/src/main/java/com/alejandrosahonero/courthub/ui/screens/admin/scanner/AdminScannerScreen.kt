@@ -71,6 +71,8 @@ fun AdminScannerScreen(navController: NavController) {
     val viewModel: AdminScannerViewModel = viewModel(
         factory = AdminScannerViewModel.factory(
             app.container.reservationRepository,
+            app.container.authRepository,
+            app.container.notificationRepository,
             app.container.validateAccessCodeUseCase
         )
     )
@@ -91,7 +93,10 @@ fun AdminScannerScreen(navController: NavController) {
         if (!hasCameraPermission) launcher.launch(Manifest.permission.CAMERA)
     }
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         when (val state = uiState.scannerState) {
             is ScannerState.Success -> ScannerResultScreen(
                 isSuccess = true,

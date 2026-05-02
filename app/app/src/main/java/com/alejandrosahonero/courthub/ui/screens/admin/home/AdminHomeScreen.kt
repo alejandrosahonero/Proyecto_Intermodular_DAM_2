@@ -58,12 +58,16 @@ fun AdminHomeScreen(navController: NavController) {
     val viewModel: AdminHomeViewModel = viewModel(
         factory = AdminHomeViewModel.factory(
             app.container.reservationRepository,
-            app.container.authRepository
+            app.container.authRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         if (uiState.isLoading) {
             Box(modifier = contentModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Red600)

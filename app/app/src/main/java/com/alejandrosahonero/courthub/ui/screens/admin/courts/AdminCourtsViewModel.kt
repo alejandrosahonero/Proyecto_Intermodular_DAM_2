@@ -8,7 +8,9 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.alejandrosahonero.courthub.domain.model.Court
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.usecase.court.DisableCourtUseCase
 import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +27,16 @@ data class AdminCourtsUiState(
     val courtToEdit: Court? = null,
     val showDeleteDialog: Court? = null,
     val courtToDisable: Court? = null,
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val unreadCount: Int = 0
 )
 
 class AdminCourtsViewModel(
     application: Application,
     private val courtRepository: ICourtRepository,
-    private val disableCourtUseCase: DisableCourtUseCase
+    private val disableCourtUseCase: DisableCourtUseCase,
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: INotificationRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminCourtsUiState())
@@ -39,6 +44,16 @@ class AdminCourtsViewModel(
 
     init {
         loadCourts()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadCourts() {
@@ -163,11 +178,19 @@ class AdminCourtsViewModel(
         fun factory(
             application: Application,
             courtRepository: ICourtRepository,
-            disableCourtUseCase: DisableCourtUseCase
+            disableCourtUseCase: DisableCourtUseCase,
+            authRepository: IAuthRepository,
+            notificationRepository: INotificationRepository
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                AdminCourtsViewModel(application, courtRepository, disableCourtUseCase) as T
+                AdminCourtsViewModel(
+                    application,
+                    courtRepository,
+                    disableCourtUseCase,
+                    authRepository,
+                    notificationRepository
+                ) as T
         }
     }
 }

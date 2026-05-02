@@ -91,10 +91,13 @@ fun AdminCourtsScreen(navController: NavController) {
         factory = AdminCourtsViewModel.factory(
             app,
             app.container.courtRepository,
-            app.container.disableCourtUseCase
+            app.container.disableCourtUseCase,
+            app.container.authRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -107,7 +110,10 @@ fun AdminCourtsScreen(navController: NavController) {
         }
     }
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Box(modifier = contentModifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))

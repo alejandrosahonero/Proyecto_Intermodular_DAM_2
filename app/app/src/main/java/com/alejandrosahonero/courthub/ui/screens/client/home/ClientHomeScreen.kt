@@ -71,7 +71,8 @@ fun ClientHomeScreen(navController: NavController) {
         factory = ClientHomeViewModel.factory(
             getCourtsUseCase = app.container.getCourtsUseCase,
             logoutUseCase = app.container.logoutUseCase,
-            authRepository = app.container.authRepository
+            authRepository = app.container.authRepository,
+            notificationRepository = app.container.notificationRepository
         )
     )
 
@@ -79,7 +80,10 @@ fun ClientHomeScreen(navController: NavController) {
 
     val pullToRefreshState = rememberPullToRefreshState()
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    ClientScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Column(
             modifier = contentModifier
                 .fillMaxSize()
