@@ -9,6 +9,8 @@ interface IAuthRepository {
 
     suspend fun login(email: String, password: String): Result<User>
 
+    suspend fun loginWithGoogle(idToken: String): Result<User>
+
     suspend fun register(
         name: String,
         email: String,

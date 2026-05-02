@@ -59,6 +59,7 @@ import com.alejandrosahonero.courthub.ui.navigation.Screen
 import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.TextHint
+import com.alejandrosahonero.courthub.utils.GoogleSignInHelper
 import kotlinx.coroutines.launch
 
 @Composable
@@ -68,7 +69,8 @@ fun LoginScreen(navController: NavController) {
     val viewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.factory(
             loginUseCase = app.container.loginUseCase,
-            registerUseCase = app.container.registerUseCase
+            registerUseCase = app.container.registerUseCase,
+            authRepository = app.container.authRepository
         )
     )
 
@@ -80,6 +82,8 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
+
+    val googleSignInHelper = remember { GoogleSignInHelper(context) }
 
     LaunchedEffect(uiState.loggedUser) {
         uiState.loggedUser?.let { user ->
@@ -228,7 +232,14 @@ fun LoginScreen(navController: NavController) {
 
                 GoogleSignInButton(
                     text = "Iniciar sesión con Google",
-                    onClick = { }
+                    onClick = {
+                        scope.launch {
+                            val idToken = googleSignInHelper.signIn()
+                            if (idToken != null) {
+                                viewModel.loginWithGoogle(idToken)
+                            }
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
