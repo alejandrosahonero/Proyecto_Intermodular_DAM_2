@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.time.LocalTime
 import java.util.Date
 
 class CourtRepositoryImpl(
@@ -184,18 +185,31 @@ class CourtRepositoryImpl(
         }
     }
 
-    override suspend fun getOccupiedSlots(
-        courtId: String,
-        date: String
-    ): Result<List<String>> {
+    override suspend fun getOccupiedSlots(courtId: String, date: String): Result<List<String>> {
         return try {
             val snapshot = firestore.collection(Constants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("courtId", courtId)
                 .whereEqualTo("date", date)
                 .whereEqualTo("status", Constants.STATUS_CONFIRMED)
                 .get().await()
-            val slots = snapshot.documents.mapNotNull { it.getString("startTime") }
-            Result.success(slots)
+
+            val occupiedSlots = mutableListOf<String>()
+
+            snapshot.documents.forEach { doc ->
+                val startTime = doc.getString("startTime") ?: return@forEach
+                val endTime = doc.getString("endTime") ?: return@forEach
+
+                // Generamos todos los slots entre startTime y endTime
+                var current = LocalTime.parse(startTime)
+                val end = LocalTime.parse(endTime)
+
+                while (current.isBefore(end)) {
+                    occupiedSlots.add("%02d:00".format(current.hour))
+                    current = current.plusHours(1)
+                }
+            }
+
+            Result.success(occupiedSlots)
         } catch (e: Exception) {
             Result.failure(e)
         }
