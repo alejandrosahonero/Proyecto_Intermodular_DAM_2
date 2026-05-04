@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val loggedUser: User? = null
+    val loggedUser: User? = null,
+    val resetEmailSent: Boolean = false
 )
 
 class AuthViewModel(
@@ -57,6 +58,25 @@ class AuthViewModel(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    fun sendPasswordReset(email: String) {
+        if (email.isBlank()) {
+            _uiState.update { it.copy(error = "Introduce tu correo electrónico") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            authRepository.sendPasswordResetEmail(email)
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, resetEmailSent = true) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
+    }
+
+    fun clearResetEmailSent() = _uiState.update { it.copy(resetEmailSent = false) }
 
     fun loginWithGoogle(idToken: String) {
         viewModelScope.launch {

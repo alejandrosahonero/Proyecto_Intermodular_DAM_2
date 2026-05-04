@@ -30,4 +30,6 @@ interface IAuthRepository {
     suspend fun getFavorites(uid: String): Result<List<String>>
 
     suspend fun toggleFavorite(uid: String, courtId: String): Result<Boolean>
+
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
 }
