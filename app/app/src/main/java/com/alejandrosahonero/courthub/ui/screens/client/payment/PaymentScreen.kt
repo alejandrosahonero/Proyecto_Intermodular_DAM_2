@@ -122,7 +122,8 @@ fun PaymentScreen(
     LaunchedEffect(uiState.reservationId) {
         uiState.reservationId?.let {
             navController.navigate(Screen.ClientReservations.route) {
-                popUpTo(Screen.ClientHome.route)
+                popUpTo(Screen.ClientHome.route) { inclusive = false }
+                launchSingleTop = true
             }
         }
     }
