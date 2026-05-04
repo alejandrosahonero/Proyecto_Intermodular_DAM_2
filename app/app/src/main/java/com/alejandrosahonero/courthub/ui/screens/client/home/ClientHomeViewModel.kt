@@ -23,7 +23,8 @@ data class ClientHomeUiState(
     val isLoading: Boolean = true,
     val searchQuery: String = "",
     val isRefreshing: Boolean = false,
-    val unreadCount: Int = 0
+    val unreadCount: Int = 0,
+    val favorites: Set<String> = emptySet()
 )
 
 class ClientHomeViewModel(
@@ -40,6 +41,31 @@ class ClientHomeViewModel(
         loadCurrentUser()
         loadCourts()
         loadUnreadCount()
+        loadFavorites()
+    }
+
+    private fun loadFavorites() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            authRepository.getFavorites(user.uid)
+                .onSuccess { list ->
+                    _uiState.update { it.copy(favorites = list.toSet()) }
+                }
+        }
+    }
+
+    fun toggleFavorite(courtId: String) {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            authRepository.toggleFavorite(user.uid, courtId)
+                .onSuccess { isNowFavorite ->
+                    _uiState.update { state ->
+                        val updated = state.favorites.toMutableSet()
+                        if (isNowFavorite) updated.add(courtId) else updated.remove(courtId)
+                        state.copy(favorites = updated)
+                    }
+                }
+        }
     }
 
     private fun loadUnreadCount() {

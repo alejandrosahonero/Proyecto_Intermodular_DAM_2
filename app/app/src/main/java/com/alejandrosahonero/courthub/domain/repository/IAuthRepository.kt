@@ -26,4 +26,8 @@ interface IAuthRepository {
     suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit>
 
     suspend fun updateUserProfile(uid: String, name: String, phone: String): Result<Unit>
+
+    suspend fun getFavorites(uid: String): Result<List<String>>
+
+    suspend fun toggleFavorite(uid: String, courtId: String): Result<Boolean>
 }

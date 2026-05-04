@@ -37,9 +37,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -184,6 +181,8 @@ fun ClientHomeScreen(navController: NavController) {
                         items(uiState.filteredCourts) { court ->
                             CourtCard(
                                 court = court,
+                                isFavorite = uiState.favorites.contains(court.id),
+                                onToggleFavorite = { viewModel.toggleFavorite(court.id) },
                                 onClick = {
                                     navController.navigate(Screen.CourtDetail.createRoute(court.id))
                                 }
@@ -205,10 +204,10 @@ fun ClientHomeScreen(navController: NavController) {
 @Composable
 private fun CourtCard(
     court: Court,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,7 +236,7 @@ private fun CourtCard(
                         .align(Alignment.TopEnd)
                         .padding(12.dp)
                         .size(24.dp)
-                        .clickable { isFavorite = !isFavorite }
+                        .clickable { onToggleFavorite() }
                 )
                 // Badge de mantenimiento
                 if (!court.isEnabled) {

@@ -224,4 +224,37 @@ class AuthRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun getFavorites(uid: String): Result<List<String>> {
+        return try {
+            val doc = firestore.collection("users").document(uid).get().await()
+
+            @Suppress("UNCHECKED_CAST")
+            val favorites = doc.get("favorites") as? List<String> ?: emptyList()
+            Result.success(favorites)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun toggleFavorite(uid: String, courtId: String): Result<Boolean> {
+        return try {
+            val doc = firestore.collection("users").document(uid).get().await()
+
+            @Suppress("UNCHECKED_CAST")
+            val current = (doc.get("favorites") as? List<String> ?: emptyList()).toMutableList()
+            val isNowFavorite = if (current.contains(courtId)) {
+                current.remove(courtId)
+                false
+            } else {
+                current.add(courtId)
+                true
+            }
+            firestore.collection("users").document(uid)
+                .update("favorites", current).await()
+            Result.success(isNowFavorite)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
