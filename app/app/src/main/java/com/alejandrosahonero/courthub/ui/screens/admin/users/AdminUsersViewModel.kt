@@ -102,7 +102,7 @@ class AdminUsersViewModel(
     fun sendNotification(user: User, title: String, body: String) {
         viewModelScope.launch {
             // Notificación al usuario
-            notificationRepository.sendNotificationToUser(user.uid, title, body, "reminder")
+            notificationRepository.sendNotificationToUser(user.uid, title, body, "admin_message")
                 .onSuccess {
                     // Notificación al administrador (historial)
                     val adminUid = authRepository.getCurrentUser()?.uid ?: ""

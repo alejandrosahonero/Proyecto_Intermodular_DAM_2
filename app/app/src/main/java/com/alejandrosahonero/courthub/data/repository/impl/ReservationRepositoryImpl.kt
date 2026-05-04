@@ -142,7 +142,7 @@ class ReservationRepositoryImpl(
                     "userId" to reservation.userId,
                     "title" to "Reserva Cancelada",
                     "body" to "Tu reserva en ${reservation.courtName} para el ${reservation.date} ha sido cancelada por un administrador. Motivo: $reason.",
-                    "type" to "cancellation",
+                    "type" to "admin_message",
                     "isRead" to false,
                     "createdAt" to Timestamp.now()
                 )

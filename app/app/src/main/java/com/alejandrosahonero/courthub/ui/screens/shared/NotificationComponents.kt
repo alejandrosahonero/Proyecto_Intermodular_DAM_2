@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ fun NotificationItem(
         NotificationType.REMINDER -> Icons.Default.Schedule to Warning
         NotificationType.MAINTENANCE -> Icons.Default.Warning to Warning
         NotificationType.PAYMENT_RECEIVED -> Icons.Default.Payments to Success
+        NotificationType.ADMIN_MESSAGE -> Icons.Default.SupportAgent to MaterialTheme.colorScheme.primary
     }
 
     Row(
@@ -71,7 +73,17 @@ fun NotificationItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(notification.title, style = MaterialTheme.typography.titleSmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(notification.title, style = MaterialTheme.typography.titleSmall)
+                if (notification.type == NotificationType.ADMIN_MESSAGE) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "• Admin",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 notification.body,

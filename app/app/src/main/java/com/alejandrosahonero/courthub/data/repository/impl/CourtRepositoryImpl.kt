@@ -135,7 +135,7 @@ class CourtRepositoryImpl(
                             "userId" to reservation.userId,
                             "title" to "Pista No Disponible",
                             "body" to "La pista ${reservation.courtName} no estará disponible el $resDate por: $reason. Tu reserva ha sido cancelada.",
-                            "type" to "cancellation",
+                            "type" to "admin_message",
                             "isRead" to false,
                             "createdAt" to Timestamp.now()
                         )
