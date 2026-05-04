@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.alejandrosahonero.courthub.domain.model.AdminCourtFilter
 import com.alejandrosahonero.courthub.domain.model.Court
+import com.alejandrosahonero.courthub.domain.model.CourtType
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
@@ -28,7 +30,8 @@ data class AdminCourtsUiState(
     val showDeleteDialog: Court? = null,
     val courtToDisable: Court? = null,
     val isRefreshing: Boolean = false,
-    val unreadCount: Int = 0
+    val unreadCount: Int = 0,
+    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL
 )
 
 class AdminCourtsViewModel(
@@ -62,7 +65,7 @@ class AdminCourtsViewModel(
                 _uiState.update {
                     it.copy(
                         courts = courts,
-                        filteredCourts = filterCourts(courts, it.searchQuery),
+                        filteredCourts = filterCourts(courts, it.searchQuery, it.activeFilter),
                         isLoading = false,
                         isRefreshing = false
                     )
@@ -71,18 +74,45 @@ class AdminCourtsViewModel(
         }
     }
 
-    private fun filterCourts(courts: List<Court>, query: String): List<Court> =
-        courts.filter {
-            query.isBlank() ||
-                    it.name.contains(query, ignoreCase = true) ||
-                    it.type.value.contains(query, ignoreCase = true)
+    private fun filterCourts(
+        courts: List<Court>,
+        query: String,
+        filter: AdminCourtFilter
+    ): List<Court> {
+        var result = when (filter) {
+            AdminCourtFilter.ALL -> courts
+            AdminCourtFilter.ENABLED -> courts.filter { it.isEnabled }
+            AdminCourtFilter.DISABLED -> courts.filter { !it.isEnabled }
+            AdminCourtFilter.PRICE_ASC -> courts.sortedBy { it.pricePerHour }
+            AdminCourtFilter.PRICE_DESC -> courts.sortedByDescending { it.pricePerHour }
+            AdminCourtFilter.PADEL -> courts.filter { it.type == CourtType.PADEL }
+            AdminCourtFilter.FUTBOL -> courts.filter { it.type == CourtType.FUTBOL }
+            AdminCourtFilter.TENIS -> courts.filter { it.type == CourtType.TENIS }
+            AdminCourtFilter.CRISTAL -> courts.filter { it.type == CourtType.CRISTAL }
         }
+        if (query.isNotBlank()) {
+            result = result.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.type.value.contains(query, ignoreCase = true)
+            }
+        }
+        return result
+    }
 
     fun onSearchQueryChange(query: String) {
         _uiState.update {
             it.copy(
                 searchQuery = query,
-                filteredCourts = filterCourts(it.courts, query)
+                filteredCourts = filterCourts(it.courts, query, it.activeFilter)
+            )
+        }
+    }
+
+    fun onFilterSelected(filter: AdminCourtFilter) {
+        _uiState.update {
+            it.copy(
+                activeFilter = filter,
+                filteredCourts = filterCourts(it.courts, it.searchQuery, filter)
             )
         }
     }

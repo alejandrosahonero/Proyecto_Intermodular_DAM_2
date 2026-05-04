@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -154,6 +155,31 @@ fun AdminCourtsScreen(navController: NavController) {
                         unfocusedContainerColor = SurfaceVariant
                     )
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // ── Filtros ───────────────────────────────────────────────────
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(com.alejandrosahonero.courthub.domain.model.AdminCourtFilter.entries) { filter ->
+                        val selected = uiState.activeFilter == filter
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onFilterSelected(filter) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = filter.label,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
