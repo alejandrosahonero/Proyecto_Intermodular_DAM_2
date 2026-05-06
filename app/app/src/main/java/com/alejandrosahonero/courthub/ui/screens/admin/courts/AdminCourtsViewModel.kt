@@ -7,8 +7,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.alejandrosahonero.courthub.domain.model.AdminCourtFilter
 import com.alejandrosahonero.courthub.domain.model.Court
+import com.alejandrosahonero.courthub.domain.model.CourtType
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.usecase.court.DisableCourtUseCase
 import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,13 +29,17 @@ data class AdminCourtsUiState(
     val courtToEdit: Court? = null,
     val showDeleteDialog: Court? = null,
     val courtToDisable: Court? = null,
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val unreadCount: Int = 0,
+    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL
 )
 
 class AdminCourtsViewModel(
     application: Application,
     private val courtRepository: ICourtRepository,
-    private val disableCourtUseCase: DisableCourtUseCase
+    private val disableCourtUseCase: DisableCourtUseCase,
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: INotificationRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminCourtsUiState())
@@ -39,6 +47,16 @@ class AdminCourtsViewModel(
 
     init {
         loadCourts()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadCourts() {
@@ -47,7 +65,7 @@ class AdminCourtsViewModel(
                 _uiState.update {
                     it.copy(
                         courts = courts,
-                        filteredCourts = filterCourts(courts, it.searchQuery),
+                        filteredCourts = filterCourts(courts, it.searchQuery, it.activeFilter),
                         isLoading = false,
                         isRefreshing = false
                     )
@@ -56,18 +74,45 @@ class AdminCourtsViewModel(
         }
     }
 
-    private fun filterCourts(courts: List<Court>, query: String): List<Court> =
-        courts.filter {
-            query.isBlank() ||
-                    it.name.contains(query, ignoreCase = true) ||
-                    it.type.value.contains(query, ignoreCase = true)
+    private fun filterCourts(
+        courts: List<Court>,
+        query: String,
+        filter: AdminCourtFilter
+    ): List<Court> {
+        var result = when (filter) {
+            AdminCourtFilter.ALL -> courts
+            AdminCourtFilter.ENABLED -> courts.filter { it.isEnabled }
+            AdminCourtFilter.DISABLED -> courts.filter { !it.isEnabled }
+            AdminCourtFilter.PRICE_ASC -> courts.sortedBy { it.pricePerHour }
+            AdminCourtFilter.PRICE_DESC -> courts.sortedByDescending { it.pricePerHour }
+            AdminCourtFilter.PADEL -> courts.filter { it.type == CourtType.PADEL }
+            AdminCourtFilter.FUTBOL -> courts.filter { it.type == CourtType.FUTBOL }
+            AdminCourtFilter.TENIS -> courts.filter { it.type == CourtType.TENIS }
+            AdminCourtFilter.CRISTAL -> courts.filter { it.type == CourtType.CRISTAL }
         }
+        if (query.isNotBlank()) {
+            result = result.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.type.value.contains(query, ignoreCase = true)
+            }
+        }
+        return result
+    }
 
     fun onSearchQueryChange(query: String) {
         _uiState.update {
             it.copy(
                 searchQuery = query,
-                filteredCourts = filterCourts(it.courts, query)
+                filteredCourts = filterCourts(it.courts, query, it.activeFilter)
+            )
+        }
+    }
+
+    fun onFilterSelected(filter: AdminCourtFilter) {
+        _uiState.update {
+            it.copy(
+                activeFilter = filter,
+                filteredCourts = filterCourts(it.courts, it.searchQuery, filter)
             )
         }
     }
@@ -163,11 +208,19 @@ class AdminCourtsViewModel(
         fun factory(
             application: Application,
             courtRepository: ICourtRepository,
-            disableCourtUseCase: DisableCourtUseCase
+            disableCourtUseCase: DisableCourtUseCase,
+            authRepository: IAuthRepository,
+            notificationRepository: INotificationRepository
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                AdminCourtsViewModel(application, courtRepository, disableCourtUseCase) as T
+                AdminCourtsViewModel(
+                    application,
+                    courtRepository,
+                    disableCourtUseCase,
+                    authRepository,
+                    notificationRepository
+                ) as T
         }
     }
 }

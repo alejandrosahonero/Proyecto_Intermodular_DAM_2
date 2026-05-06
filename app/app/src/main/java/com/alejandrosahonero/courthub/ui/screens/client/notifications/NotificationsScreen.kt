@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.ui.screens.client.ClientScaffold
 import com.alejandrosahonero.courthub.ui.screens.shared.NotificationItem
+import com.alejandrosahonero.courthub.ui.theme.Error
 import com.alejandrosahonero.courthub.ui.theme.Red600
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 
@@ -46,7 +47,10 @@ fun NotificationsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    ClientScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Column(modifier = contentModifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -67,13 +71,23 @@ fun NotificationsScreen(navController: NavController) {
                         )
                     }
                 }
-                if (uiState.unreadCount > 0) {
-                    Text(
-                        "Marcar todas leídas",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Red600,
-                        modifier = Modifier.clickable { viewModel.markAllAsRead() }
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (uiState.unreadCount > 0) {
+                        Text(
+                            "Marcar leídas",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Red600,
+                            modifier = Modifier.clickable { viewModel.markAllAsRead() }
+                        )
+                    }
+                    if (uiState.notifications.isNotEmpty()) {
+                        Text(
+                            "Borrar todas",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Error,
+                            modifier = Modifier.clickable { viewModel.deleteAll() }
+                        )
+                    }
                 }
             }
 

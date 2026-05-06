@@ -1,6 +1,7 @@
 package com.alejandrosahonero.courthub.ui.screens.admin
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.DateRange
@@ -8,6 +9,8 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.SportsTennis
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -48,6 +51,7 @@ val adminNavItems = listOf(
 @Composable
 fun AdminScaffold(
     navController: NavController,
+    unreadCount: Int = 0,
     content: @Composable (Modifier) -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -66,15 +70,40 @@ fun AdminScaffold(
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
-                            navController.navigate(item.screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (item.screen.route == Screen.AdminHome.route) {
+                                navController.navigate(item.screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        inclusive = true
+                                        saveState = false
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = false
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            } else {
+                                navController.navigate(item.screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         },
-                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        icon = {
+                            BadgedBox(
+                                badge = {
+                                    if (item.label == "Alertas" && unreadCount > 0) {
+                                        Badge(
+                                            modifier = Modifier.size(8.dp),
+                                            containerColor = Red600
+                                        )
+                                    }
+                                }
+                            ) {
+                                Icon(item.icon, contentDescription = item.label)
+                            }
+                        },
                         label = { Text(item.label) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Red600,

@@ -3,6 +3,8 @@ package com.alejandrosahonero.courthub.ui.screens.admin.scanner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
 import com.alejandrosahonero.courthub.domain.usecase.access.ValidateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.access.ValidationResult
@@ -19,16 +21,33 @@ sealed class ScannerState {
 }
 
 data class AdminScannerUiState(
-    val scannerState: ScannerState = ScannerState.Idle
+    val scannerState: ScannerState = ScannerState.Idle,
+    val unreadCount: Int = 0
 )
 
 class AdminScannerViewModel(
     private val reservationRepository: IReservationRepository,
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: INotificationRepository,
     private val validateAccessCodeUseCase: ValidateAccessCodeUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AdminScannerUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        observeUnreadCount()
+    }
+
+    private fun observeUnreadCount() {
+        viewModelScope.launch {
+            authRepository.getCurrentUser()?.let { user ->
+                notificationRepository.getUnreadCount(user.uid).collect { count ->
+                    _uiState.update { it.copy(unreadCount = count) }
+                }
+            }
+        }
+    }
 
     fun onQrScanned(qrData: String) {
         viewModelScope.launch {
@@ -74,11 +93,18 @@ class AdminScannerViewModel(
     companion object {
         fun factory(
             reservationRepository: IReservationRepository,
+            authRepository: IAuthRepository,
+            notificationRepository: INotificationRepository,
             validateAccessCodeUseCase: ValidateAccessCodeUseCase
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AdminScannerViewModel(reservationRepository, validateAccessCodeUseCase) as T
+                AdminScannerViewModel(
+                    reservationRepository,
+                    authRepository,
+                    notificationRepository,
+                    validateAccessCodeUseCase
+                ) as T
         }
     }
 }

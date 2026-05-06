@@ -15,7 +15,8 @@ enum class NotificationType(val value: String) {
     CANCELLATION("cancellation"),
     REMINDER("reminder"),
     MAINTENANCE("maintenance"),  // para notificar bloqueo de pista
-    PAYMENT_RECEIVED("payment_received");
+    PAYMENT_RECEIVED("payment_received"),
+    ADMIN_MESSAGE("admin_message");
 
     companion object {
         fun fromString(value: String): NotificationType =

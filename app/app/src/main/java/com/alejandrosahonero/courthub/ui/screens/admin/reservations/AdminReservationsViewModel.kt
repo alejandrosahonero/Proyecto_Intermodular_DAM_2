@@ -9,6 +9,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.alejandrosahonero.courthub.domain.model.Reservation
 import com.alejandrosahonero.courthub.domain.model.ReservationStatus
+import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
 import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,12 +26,15 @@ data class AdminReservationsUiState(
     val searchQuery: String = "",
     val showCancelDialog: Reservation? = null,
     val isCancelling: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val unreadCount: Int = 0
 )
 
 class AdminReservationsViewModel(
     application: Application,
-    private val reservationRepository: IReservationRepository
+    private val reservationRepository: IReservationRepository,
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: INotificationRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminReservationsUiState())
@@ -37,6 +42,16 @@ class AdminReservationsViewModel(
 
     init {
         loadReservations()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadReservations() {
@@ -105,11 +120,21 @@ class AdminReservationsViewModel(
     }
 
     companion object {
-        fun factory(application: Application, reservationRepository: IReservationRepository) =
+        fun factory(
+            application: Application,
+            reservationRepository: IReservationRepository,
+            authRepository: IAuthRepository,
+            notificationRepository: INotificationRepository
+        ) =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
-                    AdminReservationsViewModel(application, reservationRepository) as T
+                    AdminReservationsViewModel(
+                        application,
+                        reservationRepository,
+                        authRepository,
+                        notificationRepository
+                    ) as T
             }
     }
 }

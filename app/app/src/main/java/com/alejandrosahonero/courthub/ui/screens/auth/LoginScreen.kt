@@ -16,12 +16,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -58,6 +60,8 @@ import com.alejandrosahonero.courthub.domain.model.UserRole
 import com.alejandrosahonero.courthub.ui.navigation.Screen
 import com.alejandrosahonero.courthub.ui.theme.Outline
 import com.alejandrosahonero.courthub.ui.theme.Red600
+import com.alejandrosahonero.courthub.ui.theme.Success
+import com.alejandrosahonero.courthub.ui.theme.Surface
 import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.utils.GoogleSignInHelper
 import kotlinx.coroutines.launch
@@ -81,7 +85,7 @@ fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var rememberMe by remember { mutableStateOf(false) }
+    var showForgotDialog by remember { mutableStateOf(false) }
 
     val googleSignInHelper = remember { GoogleSignInHelper(context) }
 
@@ -180,29 +184,13 @@ fun LoginScreen(navController: NavController) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = rememberMe,
-                            onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = Red600,
-                                uncheckedColor = TextHint
-                            )
-                        )
-                        Text(
-                            text = "Recuérdame",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                     Text(
                         text = "¿Olvidaste la contraseña?",
                         style = MaterialTheme.typography.bodySmall,
                         color = Red600,
-                        modifier = Modifier.clickable { }
+                        modifier = Modifier.clickable { showForgotDialog = true }
                     )
                 }
 
@@ -267,11 +255,117 @@ fun LoginScreen(navController: NavController) {
             }
         }
 
+        if (showForgotDialog) {
+            ForgotPasswordDialog(
+                isLoading = uiState.isLoading,
+                resetSent = uiState.resetEmailSent,
+                onDismiss = {
+                    showForgotDialog = false
+                    viewModel.clearResetEmailSent()
+                },
+                onConfirm = { email -> viewModel.sendPasswordReset(email) }
+            )
+        }
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+}
+
+@Composable
+private fun ForgotPasswordDialog(
+    isLoading: Boolean,
+    resetSent: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        containerColor = Surface,
+        title = { Text("Recuperar contraseña") },
+        text = {
+            if (resetSent) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.MarkEmailRead,
+                        contentDescription = null,
+                        tint = Success,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        "Correo enviado. Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Correo electrónico") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Red600,
+                            unfocusedBorderColor = Outline,
+                            focusedLabelColor = Red600,
+                            unfocusedLabelColor = TextHint,
+                            cursorColor = Red600,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (resetSent) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cerrar", color = Red600)
+                }
+            } else {
+                TextButton(
+                    onClick = { onConfirm(email) },
+                    enabled = email.isNotBlank() && !isLoading
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Red600,
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Enviar", color = Red600)
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (!resetSent && !isLoading) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancelar", color = TextHint)
+                }
+            }
+        }
+    )
 }
 
 @Composable

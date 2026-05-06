@@ -36,13 +36,14 @@ interface ReservationDao {
 
     @Query("""
         UPDATE reservations 
-        SET status = :status, cancelledAt = :cancelledAt
+        SET status = :status, cancelledAt = :cancelledAt, cancellationReason = :reason
         WHERE reservationIdFirebase = :reservationId
     """)
     suspend fun updateReservationStatus(
         reservationId: String,
         status: String,
-        cancelledAt: Long?
+        cancelledAt: Long?,
+        reason: String?
     )
 
     // Limpia las reservas del usuario antes de una resincronización

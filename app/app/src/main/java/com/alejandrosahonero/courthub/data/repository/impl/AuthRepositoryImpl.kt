@@ -184,8 +184,27 @@ class AuthRepositoryImpl(
 
     override suspend fun setUserEnabled(uid: String, enabled: Boolean): Result<Unit> {
         return try {
-            firestore.collection("users").document(uid)
-                .update("isEnabled", enabled).await()
+            val batch = firestore.batch()
+            val userRef = firestore.collection("users").document(uid)
+
+            batch.update(userRef, "isEnabled", enabled)
+
+            // Notificación al Administrador (historial)
+            val adminNotificationRef =
+                firestore.collection(Constants.COLLECTION_NOTIFICATIONS).document()
+            val action = if (enabled) "habilitado" else "deshabilitado"
+            batch.set(
+                adminNotificationRef, mapOf(
+                    "userId" to (firebaseAuth.currentUser?.uid ?: ""),
+                    "title" to "Usuario $action",
+                    "body" to "Has $action al usuario con ID $uid.",
+                    "type" to "maintenance",
+                    "isRead" to false,
+                    "createdAt" to Timestamp.now()
+                )
+            )
+
+            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -200,6 +219,48 @@ class AuthRepositoryImpl(
             if (local != null) {
                 userDao.insertUser(local.copy(name = name, phone = phone))
             }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getFavorites(uid: String): Result<List<String>> {
+        return try {
+            val doc = firestore.collection("users").document(uid).get().await()
+
+            @Suppress("UNCHECKED_CAST")
+            val favorites = doc.get("favorites") as? List<String> ?: emptyList()
+            Result.success(favorites)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun toggleFavorite(uid: String, courtId: String): Result<Boolean> {
+        return try {
+            val doc = firestore.collection("users").document(uid).get().await()
+
+            @Suppress("UNCHECKED_CAST")
+            val current = (doc.get("favorites") as? List<String> ?: emptyList()).toMutableList()
+            val isNowFavorite = if (current.contains(courtId)) {
+                current.remove(courtId)
+                false
+            } else {
+                current.add(courtId)
+                true
+            }
+            firestore.collection("users").document(uid)
+                .update("favorites", current).await()
+            Result.success(isNowFavorite)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+        return try {
+            firebaseAuth.sendPasswordResetEmail(email).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

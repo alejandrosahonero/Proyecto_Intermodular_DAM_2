@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.alejandrosahonero.courthub.domain.model.Court
+import com.alejandrosahonero.courthub.domain.model.CourtFilter
+import com.alejandrosahonero.courthub.domain.model.CourtType
 import com.alejandrosahonero.courthub.domain.model.User
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.usecase.auth.LogoutUseCase
@@ -22,13 +24,17 @@ data class ClientHomeUiState(
     val currentUser: User? = null,
     val isLoading: Boolean = true,
     val searchQuery: String = "",
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val unreadCount: Int = 0,
+    val favorites: Set<String> = emptySet(),
+    val activeFilter: CourtFilter = CourtFilter.ALL
 )
 
 class ClientHomeViewModel(
     private val getCourtsUseCase: GetCourtsUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val authRepository: IAuthRepository
+    private val authRepository: IAuthRepository,
+    private val notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientHomeUiState())
@@ -37,6 +43,55 @@ class ClientHomeViewModel(
     init {
         loadCurrentUser()
         loadCourts()
+        loadUnreadCount()
+        loadFavorites()
+    }
+
+    private fun loadFavorites() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            authRepository.getFavorites(user.uid)
+                .onSuccess { list ->
+                    val newFavs = list.toSet()
+                    _uiState.update {
+                        it.copy(
+                            favorites = newFavs,
+                            filteredCourts = applyFilter(
+                                it.courts, it.searchQuery, it.activeFilter, newFavs
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    fun toggleFavorite(courtId: String) {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            authRepository.toggleFavorite(user.uid, courtId)
+                .onSuccess { isNowFavorite ->
+                    _uiState.update { state ->
+                        val updated = state.favorites.toMutableSet()
+                        if (isNowFavorite) updated.add(courtId) else updated.remove(courtId)
+                        val newFavs = updated.toSet()
+                        state.copy(
+                            favorites = newFavs,
+                            filteredCourts = applyFilter(
+                                state.courts, state.searchQuery, state.activeFilter, newFavs
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadCurrentUser() {
@@ -54,27 +109,62 @@ class ClientHomeViewModel(
                     _uiState.update {
                         it.copy(
                             courts = courts,
-                            filteredCourts = applyFilter(courts, it.searchQuery),
-                            isLoading = false
+                            filteredCourts = applyFilter(
+                                courts, it.searchQuery, it.activeFilter, it.favorites
+                            ),
+                            isLoading = false,
+                            isRefreshing = false
                         )
                     }
                 }
         }
     }
 
-    private fun applyFilter(courts: List<Court>, query: String): List<Court> =
-        courts.filter { c ->
-            c.isEnabled &&
-                    (query.isBlank() ||
-                            c.name.contains(query, ignoreCase = true) ||
-                            c.type.value.contains(query, ignoreCase = true))
+    private fun applyFilter(
+        courts: List<Court>,
+        query: String,
+        filter: CourtFilter,
+        favorites: Set<String>
+    ): List<Court> {
+        var result = courts.filter { it.isEnabled }
+
+        result = when (filter) {
+            CourtFilter.ALL -> result
+            CourtFilter.FAVORITES -> result.filter { favorites.contains(it.id) }
+            CourtFilter.PRICE_ASC -> result.sortedBy { it.pricePerHour }
+            CourtFilter.PRICE_DESC -> result.sortedByDescending { it.pricePerHour }
+            CourtFilter.AVAILABLE -> result.filter { it.isEnabled && it.disabledUntil == null }
+            CourtFilter.PADEL -> result.filter { it.type == CourtType.PADEL }
+            CourtFilter.FUTBOL -> result.filter { it.type == CourtType.FUTBOL }
+            CourtFilter.TENIS -> result.filter { it.type == CourtType.TENIS }
+            CourtFilter.CRISTAL -> result.filter { it.type == CourtType.CRISTAL }
         }
+
+        if (query.isNotBlank()) {
+            result = result.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.type.value.contains(query, ignoreCase = true)
+            }
+        }
+        return result
+    }
 
     fun onSearchQueryChange(query: String) {
         _uiState.update { state ->
             state.copy(
                 searchQuery = query,
-                filteredCourts = applyFilter(state.courts, query)
+                filteredCourts = applyFilter(
+                    state.courts, query, state.activeFilter, state.favorites
+                )
+            )
+        }
+    }
+
+    fun onFilterSelected(filter: CourtFilter) {
+        _uiState.update {
+            it.copy(
+                activeFilter = filter,
+                filteredCourts = applyFilter(it.courts, it.searchQuery, filter, it.favorites)
             )
         }
     }
@@ -95,7 +185,9 @@ class ClientHomeViewModel(
                     _uiState.update {
                         it.copy(
                             courts = courts,
-                            filteredCourts = applyFilter(courts, it.searchQuery),
+                            filteredCourts = applyFilter(
+                                courts, it.searchQuery, it.activeFilter, it.favorites
+                            ),
                             isRefreshing = false
                         )
                     }
@@ -107,11 +199,17 @@ class ClientHomeViewModel(
         fun factory(
             getCourtsUseCase: GetCourtsUseCase,
             logoutUseCase: LogoutUseCase,
-            authRepository: IAuthRepository
+            authRepository: IAuthRepository,
+            notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                ClientHomeViewModel(getCourtsUseCase, logoutUseCase, authRepository) as T
+                ClientHomeViewModel(
+                    getCourtsUseCase,
+                    logoutUseCase,
+                    authRepository,
+                    notificationRepository
+                ) as T
         }
     }
 }

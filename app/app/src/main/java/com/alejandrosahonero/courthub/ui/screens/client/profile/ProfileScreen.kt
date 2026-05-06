@@ -75,7 +75,8 @@ fun ProfileScreen(navController: NavController) {
         factory = ProfileViewModel.factory(
             app.container.authRepository,
             app.container.logoutUseCase,
-            app.container.supportRepository
+            app.container.supportRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -84,7 +85,10 @@ fun ProfileScreen(navController: NavController) {
 
     val context = LocalContext.current
 
-    ClientScaffold(navController = navController) { contentModifier ->
+    ClientScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         if (uiState.isLoading) {
             Box(modifier = contentModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Red600)

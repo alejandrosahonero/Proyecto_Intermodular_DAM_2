@@ -26,7 +26,8 @@ data class AdminUsersUiState(
     val isLoading: Boolean = true,
     val searchQuery: String = "",
     val showNotificationDialog: User? = null,
-    val error: String? = null
+    val error: String? = null,
+    val unreadCount: Int = 0
 )
 
 class AdminUsersViewModel(
@@ -41,6 +42,16 @@ class AdminUsersViewModel(
 
     init {
         loadUsers()
+        loadUnreadCount()
+    }
+
+    private fun loadUnreadCount() {
+        viewModelScope.launch {
+            val user = authRepository.getCurrentUser() ?: return@launch
+            notificationRepository.getUnreadCount(user.uid).collect { count ->
+                _uiState.update { it.copy(unreadCount = count) }
+            }
+        }
     }
 
     private fun loadUsers() {
@@ -90,8 +101,18 @@ class AdminUsersViewModel(
 
     fun sendNotification(user: User, title: String, body: String) {
         viewModelScope.launch {
-            notificationRepository.sendNotificationToUser(user.uid, title, body)
+            // Notificación al usuario
+            notificationRepository.sendNotificationToUser(user.uid, title, body, "admin_message")
                 .onSuccess {
+                    // Notificación al administrador (historial)
+                    val adminUid = authRepository.getCurrentUser()?.uid ?: ""
+                    notificationRepository.sendNotificationToUser(
+                        adminUid,
+                        "Mensaje Enviado",
+                        "Has enviado un mensaje a ${user.name}: $title",
+                        "reminder"
+                    )
+
                     // Trigger local notification for confirmation/validation
                     val data = Data.Builder()
                         .putString("title", "Notificación Enviada")

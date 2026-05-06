@@ -2,6 +2,8 @@ package com.alejandrosahonero.courthub.ui.screens.admin.courts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,9 +25,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -49,6 +54,7 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,9 +87,10 @@ import com.alejandrosahonero.courthub.ui.theme.TextHint
 import com.alejandrosahonero.courthub.ui.theme.Warning
 import com.alejandrosahonero.courthub.utils.toPriceString
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.time.ZonedDateTime
 
 @Composable
 fun AdminCourtsScreen(navController: NavController) {
@@ -91,10 +99,13 @@ fun AdminCourtsScreen(navController: NavController) {
         factory = AdminCourtsViewModel.factory(
             app,
             app.container.courtRepository,
-            app.container.disableCourtUseCase
+            app.container.disableCourtUseCase,
+            app.container.authRepository,
+            app.container.notificationRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -107,7 +118,10 @@ fun AdminCourtsScreen(navController: NavController) {
         }
     }
 
-    AdminScaffold(navController = navController) { contentModifier ->
+    AdminScaffold(
+        navController = navController,
+        unreadCount = uiState.unreadCount
+    ) { contentModifier ->
         Box(modifier = contentModifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -141,6 +155,31 @@ fun AdminCourtsScreen(navController: NavController) {
                         unfocusedContainerColor = SurfaceVariant
                     )
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // ── Filtros ───────────────────────────────────────────────────
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(com.alejandrosahonero.courthub.domain.model.AdminCourtFilter.entries) { filter ->
+                        val selected = uiState.activeFilter == filter
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onFilterSelected(filter) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = filter.label,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -355,13 +394,81 @@ private fun DisableCourtSheet(
     onConfirm: (reason: String, from: Long, until: Long) -> Unit
 ) {
     var reason by remember { mutableStateOf("") }
-    var fromDate by remember { mutableStateOf("") }
-    var fromTime by remember { mutableStateOf("") }
-    var untilDate by remember { mutableStateOf("") }
-    var untilTime by remember { mutableStateOf("") }
     var inputError by remember { mutableStateOf<String?>(null) }
 
+    // From
+    var fromDate by remember { mutableStateOf<LocalDate?>(null) }
+    var fromTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    // Until
+    var untilDate by remember { mutableStateOf<LocalDate?>(null) }
+    var untilTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    // Pickers visibles
+    var showFromDatePicker by remember { mutableStateOf(false) }
+    var showFromTimePicker by remember { mutableStateOf(false) }
+    var showUntilDatePicker by remember { mutableStateOf(false) }
+    var showUntilTimePicker by remember { mutableStateOf(false) }
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+
+    // Lanzar pickers nativos de Android
+    if (showFromDatePicker) {
+        val picker = android.app.DatePickerDialog(
+            context,
+            { _, y, m, d -> fromDate = LocalDate.of(y, m + 1, d); showFromDatePicker = false },
+            LocalDate.now().year,
+            LocalDate.now().monthValue - 1,
+            LocalDate.now().dayOfMonth
+        )
+        picker.setOnCancelListener { showFromDatePicker = false }
+        DisposableEffect(Unit) {
+            picker.show()
+            onDispose { picker.dismiss() }
+        }
+    }
+
+    if (showFromTimePicker) {
+        val picker = android.app.TimePickerDialog(
+            context,
+            { _, h, m -> fromTime = LocalTime.of(h, m); showFromTimePicker = false },
+            LocalTime.now().hour, 0, true
+        )
+        picker.setOnCancelListener { showFromTimePicker = false }
+        DisposableEffect(Unit) {
+            picker.show()
+            onDispose { picker.dismiss() }
+        }
+    }
+
+    if (showUntilDatePicker) {
+        val picker = android.app.DatePickerDialog(
+            context,
+            { _, y, m, d -> untilDate = LocalDate.of(y, m + 1, d); showUntilDatePicker = false },
+            LocalDate.now().year,
+            LocalDate.now().monthValue - 1,
+            LocalDate.now().dayOfMonth
+        )
+        picker.setOnCancelListener { showUntilDatePicker = false }
+        DisposableEffect(Unit) {
+            picker.show()
+            onDispose { picker.dismiss() }
+        }
+    }
+
+    if (showUntilTimePicker) {
+        val picker = android.app.TimePickerDialog(
+            context,
+            { _, h, m -> untilTime = LocalTime.of(h, m); showUntilTimePicker = false },
+            LocalTime.now().hour, 0, true
+        )
+        picker.setOnCancelListener { showUntilTimePicker = false }
+        DisposableEffect(Unit) {
+            picker.show()
+            onDispose { picker.dismiss() }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -389,53 +496,47 @@ private fun DisableCourtSheet(
                 shape = RoundedCornerShape(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // Desde
             Text("Desde", style = MaterialTheme.typography.labelMedium, color = TextHint)
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = fromDate,
-                    onValueChange = { fromDate = it },
-                    label = { Text("YYYY-MM-DD") },
-                    singleLine = true,
+                DateTimeChip(
+                    label = fromDate?.toString() ?: "Fecha",
+                    icon = Icons.Default.CalendarMonth,
+                    filled = fromDate != null,
                     modifier = Modifier.weight(1f),
-                    colors = disableSheetFieldColors(),
-                    shape = RoundedCornerShape(8.dp)
+                    onClick = { showFromDatePicker = true }
                 )
-                OutlinedTextField(
-                    value = fromTime,
-                    onValueChange = { fromTime = it },
-                    label = { Text("HH:mm") },
-                    singleLine = true,
+                DateTimeChip(
+                    label = fromTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "Hora",
+                    icon = Icons.Default.Schedule,
+                    filled = fromTime != null,
                     modifier = Modifier.weight(1f),
-                    colors = disableSheetFieldColors(),
-                    shape = RoundedCornerShape(8.dp)
+                    onClick = { showFromTimePicker = true }
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Hasta
             Text("Hasta", style = MaterialTheme.typography.labelMedium, color = TextHint)
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = untilDate,
-                    onValueChange = { untilDate = it },
-                    label = { Text("YYYY-MM-DD") },
-                    singleLine = true,
+                DateTimeChip(
+                    label = untilDate?.toString() ?: "Fecha",
+                    icon = Icons.Default.CalendarMonth,
+                    filled = untilDate != null,
                     modifier = Modifier.weight(1f),
-                    colors = disableSheetFieldColors(),
-                    shape = RoundedCornerShape(8.dp)
+                    onClick = { showUntilDatePicker = true }
                 )
-                OutlinedTextField(
-                    value = untilTime,
-                    onValueChange = { untilTime = it },
-                    label = { Text("HH:mm") },
-                    singleLine = true,
+                DateTimeChip(
+                    label = untilTime?.let { "%02d:%02d".format(it.hour, it.minute) } ?: "Hora",
+                    icon = Icons.Default.Schedule,
+                    filled = untilTime != null,
                     modifier = Modifier.weight(1f),
-                    colors = disableSheetFieldColors(),
-                    shape = RoundedCornerShape(8.dp)
+                    onClick = { showUntilTimePicker = true }
                 )
             }
 
@@ -448,21 +549,37 @@ private fun DisableCourtSheet(
 
             Button(
                 onClick = {
-                    try {
-                        val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-                        val from = LocalDateTime.parse("$fromDate $fromTime", fmt)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                        val until = LocalDateTime.parse("$untilDate $untilTime", fmt)
-                            .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                        if (reason.isBlank()) {
-                            inputError = "El motivo es obligatorio"
-                            return@Button
+                    when {
+                        reason.isBlank() -> {
+                            inputError = "El motivo es obligatorio"; return@Button
                         }
-                        inputError = null
-                        onConfirm(reason, from, until)
-                    } catch (e: Exception) {
-                        inputError = "Formato de fecha/hora incorrecto"
+
+                        fromDate == null -> {
+                            inputError = "Selecciona fecha de inicio"; return@Button
+                        }
+
+                        fromTime == null -> {
+                            inputError = "Selecciona hora de inicio"; return@Button
+                        }
+
+                        untilDate == null -> {
+                            inputError = "Selecciona fecha de fin"; return@Button
+                        }
+
+                        untilTime == null -> {
+                            inputError = "Selecciona hora de fin"; return@Button
+                        }
                     }
+                    val from = ZonedDateTime.of(fromDate!!, fromTime!!, ZoneId.systemDefault())
+                        .toInstant().toEpochMilli()
+                    val until = ZonedDateTime.of(untilDate!!, untilTime!!, ZoneId.systemDefault())
+                        .toInstant().toEpochMilli()
+                    if (from >= until) {
+                        inputError = "La fecha de inicio debe ser anterior a la de fin"
+                        return@Button
+                    }
+                    inputError = null
+                    onConfirm(reason, from, until)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -475,6 +592,39 @@ private fun DisableCourtSheet(
         }
     }
 }
+
+@Composable
+private fun DateTimeChip(
+    label: String,
+    icon: ImageVector,
+    filled: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (filled) Red600.copy(alpha = 0.15f) else SurfaceVariant)
+            .border(1.dp, if (filled) Red600 else Outline, RoundedCornerShape(8.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (filled) Red600 else TextHint,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (filled) Red600 else TextHint
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
