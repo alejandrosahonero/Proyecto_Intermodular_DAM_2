@@ -105,4 +105,5 @@ dependencies {
     implementation(libs.mlkit.barcode)
     implementation(libs.zxing.core)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.play.services.location)
 }

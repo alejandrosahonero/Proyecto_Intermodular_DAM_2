@@ -6,11 +6,13 @@ import com.alejandrosahonero.courthub.data.repository.impl.AuthRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.CourtRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.NotificationRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.ReservationRepositoryImpl
+import com.alejandrosahonero.courthub.data.repository.impl.SportCenterRepositoryImpl
 import com.alejandrosahonero.courthub.data.repository.impl.SupportRepositoryImpl
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
 import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
+import com.alejandrosahonero.courthub.domain.repository.ISportCenterRepository
 import com.alejandrosahonero.courthub.domain.repository.ISupportRepository
 import com.alejandrosahonero.courthub.domain.usecase.access.GenerateAccessCodeUseCase
 import com.alejandrosahonero.courthub.domain.usecase.access.ValidateAccessCodeUseCase
@@ -63,6 +65,8 @@ class AppContainer(context: Context) {
     )
 
     val supportRepository: ISupportRepository = SupportRepositoryImpl(firestore)
+
+    val sportCenterRepository: ISportCenterRepository = SportCenterRepositoryImpl(firestore)
 
     // ── Use Cases — Auth ──────────────────────────────────────────────────────
     val loginUseCase = LoginUseCase(authRepository)

@@ -10,6 +10,7 @@ data class CourtDto(
     val isEnabled: Boolean = true,
     val description: String = "",
     val imageUrl: String? = null,
+    val centerId: String = "",
     val disabledReason: String? = null,
 
     @get:PropertyName("disabledFrom")
@@ -20,5 +21,5 @@ data class CourtDto(
     @set:PropertyName("disabledUntil")
     var disabledUntil: Timestamp? = null
 ) {
-    constructor() : this("", "", 0.0, true, "", null, null, null, null)
+    constructor() : this("", "", 0.0, true, "", null, "", null, null, null)
 }

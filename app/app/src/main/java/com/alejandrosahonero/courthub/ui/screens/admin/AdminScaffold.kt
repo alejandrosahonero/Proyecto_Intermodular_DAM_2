@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.SportsTennis
+import androidx.compose.material.icons.filled.Stadium
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ data class AdminNavItem(
 
 val adminNavItems = listOf(
     AdminNavItem("Panel", Icons.Default.Dashboard, Screen.AdminHome),
+    AdminNavItem("Centros", Icons.Default.Stadium, Screen.AdminCenters),
     AdminNavItem("Pistas", Icons.Default.SportsTennis, Screen.AdminCourts),
     AdminNavItem("Reservas", Icons.Default.DateRange, Screen.AdminReservations),
     AdminNavItem("QR", Icons.Default.QrCodeScanner, Screen.AdminScanner),

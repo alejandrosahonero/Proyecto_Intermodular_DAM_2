@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.domain.model.UserRole
+import com.alejandrosahonero.courthub.ui.screens.admin.centers.AdminCentersScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.courts.AdminCourtsScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.home.AdminHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.admin.notifications.AdminNotificationsScreen
@@ -26,6 +27,8 @@ import com.alejandrosahonero.courthub.ui.screens.admin.scanner.AdminScannerScree
 import com.alejandrosahonero.courthub.ui.screens.admin.users.AdminUsersScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.LoginScreen
 import com.alejandrosahonero.courthub.ui.screens.auth.RegisterScreen
+import com.alejandrosahonero.courthub.ui.screens.client.centers.ClientCentersScreen
+import com.alejandrosahonero.courthub.ui.screens.client.centers.SportCenterDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.courts.CourtDetailScreen
 import com.alejandrosahonero.courthub.ui.screens.client.home.ClientHomeScreen
 import com.alejandrosahonero.courthub.ui.screens.client.notifications.NotificationsScreen
@@ -72,6 +75,13 @@ fun NavGraph() {
         composable(Screen.ClientHome.route) {
             ClientHomeScreen(navController = navController)
         }
+        composable(Screen.ClientCenters.route) {
+            ClientCentersScreen(navController = navController)
+        }
+        composable(Screen.SportCenterDetail.route) { backStackEntry ->
+            val centerId = backStackEntry.arguments?.getString("centerId") ?: ""
+            SportCenterDetailScreen(centerId = centerId, navController = navController)
+        }
         composable(Screen.ClientReservations.route) {
             ReservationsScreen(navController = navController)
         }
@@ -101,6 +111,9 @@ fun NavGraph() {
         // ── Admin ─────────────────────────────────────────────────────────────
         composable(Screen.AdminHome.route) {
             AdminHomeScreen(navController = navController)
+        }
+        composable(Screen.AdminCenters.route) {
+            AdminCentersScreen(navController = navController)
         }
         composable(Screen.AdminCourts.route) {
             AdminCourtsScreen(navController = navController)

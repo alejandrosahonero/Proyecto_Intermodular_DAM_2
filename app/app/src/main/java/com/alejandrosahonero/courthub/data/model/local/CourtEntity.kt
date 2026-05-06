@@ -14,6 +14,7 @@ data class CourtEntity(
     val isEnabled: Boolean,
     val description: String,
     val imageUrl: String?,
+    val centerId: String,
     val disabledReason: String?,
     val disabledFrom: Long?,  // epoch millis
     val disabledUntil: Long?  // epoch millis
