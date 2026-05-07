@@ -20,7 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Card
@@ -120,20 +120,20 @@ fun AdminHomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Fila KPIs y Acciones (Ajustada para igualar altura)
+            // Fila de Acciones Rápidas (Ajustada para igualar altura)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                KpiCard(
+                ActionCard(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
-                    icon = Icons.Default.DateRange,
-                    value = uiState.totalToday.toString(),
-                    label = "Reservas Hoy"
+                    icon = Icons.Default.Group,
+                    label = "Gestionar Usuarios",
+                    onClick = { navController.navigate(Screen.AdminUsers.route) }
                 )
                 ActionCard(
                     modifier = Modifier
@@ -189,8 +189,11 @@ private fun KpiCard(
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(icon, contentDescription = null, tint = Red600, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
@@ -242,19 +245,28 @@ private fun RevenueCard(value: Double, label: String, isWeekly: Boolean) {
         colors = CardDefaults.cardColors(containerColor = Surface),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Icon(
-                if (isWeekly) Icons.Default.TrendingUp else Icons.Default.AttachMoney,
-                contentDescription = null,
-                tint = Red600,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Icon(
+                    if (isWeekly) Icons.Default.TrendingUp else Icons.Default.AttachMoney,
+                    contentDescription = null,
+                    tint = Red600,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(label, style = MaterialTheme.typography.bodyMedium, color = TextHint)
+            }
             Text(
                 text = "$${"%.2f".format(value)}",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Text(label, style = MaterialTheme.typography.bodySmall, color = TextHint)
         }
     }
 }
