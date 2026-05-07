@@ -63,7 +63,22 @@ class SportCenterRepositoryImpl(
 
     override suspend fun deleteSportCenter(id: String): Result<Unit> {
         return try {
-            firestore.collection(Constants.COLLECTION_SPORT_CENTERS).document(id).delete().await()
+            val batch = firestore.batch()
+
+            // 1. Referencia al centro a borrar
+            val centerRef = firestore.collection(Constants.COLLECTION_SPORT_CENTERS).document(id)
+            batch.delete(centerRef)
+
+            // 2. Buscar pistas asociadas para desvincularlas
+            val associatedCourts = firestore.collection(Constants.COLLECTION_COURTS)
+                .whereEqualTo("centerId", id)
+                .get().await()
+
+            associatedCourts.documents.forEach { doc ->
+                batch.update(doc.reference, "centerId", "")
+            }
+
+            batch.commit().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

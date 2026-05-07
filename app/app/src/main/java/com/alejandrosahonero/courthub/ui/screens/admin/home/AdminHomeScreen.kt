@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,8 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -118,22 +120,28 @@ fun AdminHomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Fila KPIs pequeños
+            // Fila KPIs y Acciones (Ajustada para igualar altura)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 KpiCard(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     icon = Icons.Default.DateRange,
                     value = uiState.totalToday.toString(),
                     label = "Reservas Hoy"
                 )
-                KpiCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.CalendarMonth,
-                    value = uiState.totalWeek.toString(),
-                    label = "Reservas Semana"
+                ActionCard(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    icon = Icons.Default.QrCodeScanner,
+                    label = "Escanear QR",
+                    onClick = { navController.navigate(Screen.AdminScanner.route) }
                 )
             }
 
@@ -189,6 +197,38 @@ private fun KpiCard(
             Text(value, style = MaterialTheme.typography.headlineMedium)
             Text(
                 label, style = MaterialTheme.typography.bodySmall, color = TextHint,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionCard(
+    modifier: Modifier,
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Red600.copy(alpha = 0.1f)),
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Red600.copy(alpha = 0.2f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = Red600, modifier = Modifier.size(28.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.titleSmall,
+                color = Red600,
                 textAlign = TextAlign.Center
             )
         }
