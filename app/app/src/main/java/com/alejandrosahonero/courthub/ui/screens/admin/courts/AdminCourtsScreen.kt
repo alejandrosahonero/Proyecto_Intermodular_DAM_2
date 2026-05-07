@@ -30,8 +30,10 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -178,7 +180,7 @@ fun AdminCourtsScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // ── Filtros ───────────────────────────────────────────────────
+                // ── Filtros por Tipo/Precio ───────────────────────────────────────────────────
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp)
@@ -194,6 +196,47 @@ fun AdminCourtsScreen(navController: NavController) {
                         ) {
                             Text(
                                 text = filter.label,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ── Filtros por Centro ───────────────────────────────────────────────────
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    item {
+                        val selected = uiState.selectedCenterId == null
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onCenterFilterSelected(null) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                "Todos los centros",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                    items(uiState.centers) { center ->
+                        val selected = uiState.selectedCenterId == center.id
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onCenterFilterSelected(center.id) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                center.name,
                                 style = MaterialTheme.typography.labelLarge,
                                 color = if (selected) Color.White else TextHint
                             )
@@ -217,18 +260,45 @@ fun AdminCourtsScreen(navController: NavController) {
                                 onRefresh = { viewModel.refresh() }
                             )
                     ) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                        ) {
-                            items(uiState.filteredCourts, key = { it.id }) { court ->
-                                AdminCourtCard(
-                                    court = court,
-                                    onDisable = { viewModel.onDisableRequest(court) },
-                                    onEnable = { viewModel.enableCourt(court.id) },
-                                    onEdit = { viewModel.onEditCourt(court) },
-                                    onDelete = { viewModel.onDeleteRequest(court) }
-                                )
+                        if (uiState.filteredCourts.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        Icons.Default.SportsTennis,
+                                        contentDescription = null,
+                                        tint = TextHint,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        if (uiState.searchQuery.isEmpty()) "Aún no hay pistas registradas"
+                                        else "No se encontraron pistas",
+                                        color = TextHint,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                items(uiState.filteredCourts, key = { it.id }) { court ->
+                                    val centerName =
+                                        uiState.centers.find { it.id == court.centerId }?.name
+                                            ?: "Sin centro"
+                                    AdminCourtCard(
+                                        court = court,
+                                        centerName = centerName,
+                                        onDisable = { viewModel.onDisableRequest(court) },
+                                        onEnable = { viewModel.enableCourt(court.id) },
+                                        onEdit = { viewModel.onEditCourt(court) },
+                                        onDelete = { viewModel.onDeleteRequest(court) }
+                                    )
+                                }
                             }
                         }
                         Indicator(
@@ -311,6 +381,7 @@ fun AdminCourtsScreen(navController: NavController) {
 @Composable
 private fun AdminCourtCard(
     court: Court,
+    centerName: String,
     onDisable: () -> Unit,
     onEnable: () -> Unit,
     onEdit: () -> Unit,
@@ -350,16 +421,39 @@ private fun AdminCourtCard(
             }
 
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(court.name, style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(court.name, style = MaterialTheme.typography.titleMedium)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = TextHint,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                centerName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextHint
+                            )
+                        }
+                    }
+                    Text(
+                        "${court.pricePerHour.toPriceString()}/hora",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Red600
+                    )
+                }
+
                 Text(
                     court.type.value,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    "${court.pricePerHour.toPriceString()}/hora",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Red600
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

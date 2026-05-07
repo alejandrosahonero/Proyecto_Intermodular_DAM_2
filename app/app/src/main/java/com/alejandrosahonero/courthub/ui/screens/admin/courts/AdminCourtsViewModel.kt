@@ -35,7 +35,8 @@ data class AdminCourtsUiState(
     val showCreateSheet: Boolean = false,
     val isRefreshing: Boolean = false,
     val unreadCount: Int = 0,
-    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL
+    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL,
+    val selectedCenterId: String? = null
 )
 
 class AdminCourtsViewModel(
@@ -79,7 +80,12 @@ class AdminCourtsViewModel(
                 _uiState.update {
                     it.copy(
                         courts = courts,
-                        filteredCourts = filterCourts(courts, it.searchQuery, it.activeFilter),
+                        filteredCourts = filterCourts(
+                            courts,
+                            it.searchQuery,
+                            it.activeFilter,
+                            it.selectedCenterId
+                        ),
                         isLoading = false,
                         isRefreshing = false
                     )
@@ -91,7 +97,8 @@ class AdminCourtsViewModel(
     private fun filterCourts(
         courts: List<Court>,
         query: String,
-        filter: AdminCourtFilter
+        filter: AdminCourtFilter,
+        centerId: String?
     ): List<Court> {
         var result = when (filter) {
             AdminCourtFilter.ALL -> courts
@@ -104,10 +111,18 @@ class AdminCourtsViewModel(
             AdminCourtFilter.TENIS -> courts.filter { it.type == CourtType.TENIS }
             AdminCourtFilter.CRISTAL -> courts.filter { it.type == CourtType.CRISTAL }
         }
+
+        if (centerId != null) {
+            result = result.filter { it.centerId == centerId }
+        }
+
         if (query.isNotBlank()) {
+            val centerNames = _uiState.value.centers.associate { it.id to it.name }
             result = result.filter {
+                val cName = centerNames[it.centerId] ?: ""
                 it.name.contains(query, ignoreCase = true) ||
-                        it.type.value.contains(query, ignoreCase = true)
+                        it.type.value.contains(query, ignoreCase = true) ||
+                        cName.contains(query, ignoreCase = true)
             }
         }
         return result
@@ -117,7 +132,12 @@ class AdminCourtsViewModel(
         _uiState.update {
             it.copy(
                 searchQuery = query,
-                filteredCourts = filterCourts(it.courts, query, it.activeFilter)
+                filteredCourts = filterCourts(
+                    it.courts,
+                    query,
+                    it.activeFilter,
+                    it.selectedCenterId
+                )
             )
         }
     }
@@ -126,7 +146,21 @@ class AdminCourtsViewModel(
         _uiState.update {
             it.copy(
                 activeFilter = filter,
-                filteredCourts = filterCourts(it.courts, it.searchQuery, filter)
+                filteredCourts = filterCourts(
+                    it.courts,
+                    it.searchQuery,
+                    filter,
+                    it.selectedCenterId
+                )
+            )
+        }
+    }
+
+    fun onCenterFilterSelected(centerId: String?) {
+        _uiState.update {
+            it.copy(
+                selectedCenterId = centerId,
+                filteredCourts = filterCourts(it.courts, it.searchQuery, it.activeFilter, centerId)
             )
         }
     }

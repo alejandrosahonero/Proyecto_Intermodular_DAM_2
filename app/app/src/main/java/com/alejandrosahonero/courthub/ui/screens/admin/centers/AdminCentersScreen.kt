@@ -147,16 +147,40 @@ fun AdminCentersScreen(navController: NavController) {
                         CircularProgressIndicator(color = Red600)
                     }
                 } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        items(viewModel.filteredCenters(), key = { it.id }) { center ->
-                            AdminSportCenterCard(
-                                center = center,
-                                onEdit = { viewModel.onEditCenter(center) },
-                                onDelete = { viewModel.onDeleteRequest(center) }
-                            )
+                    val filteredCenters = viewModel.filteredCenters()
+                    if (filteredCenters.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    tint = TextHint,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    if (uiState.searchQuery.isEmpty()) "Aún no hay centros deportivos"
+                                    else "No se encontraron centros",
+                                    color = TextHint,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            items(filteredCenters, key = { it.id }) { center ->
+                                AdminSportCenterCard(
+                                    center = center,
+                                    onEdit = { viewModel.onEditCenter(center) },
+                                    onDelete = { viewModel.onDeleteRequest(center) }
+                                )
+                            }
                         }
                     }
                 }
