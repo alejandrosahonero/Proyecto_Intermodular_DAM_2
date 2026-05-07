@@ -5,6 +5,7 @@ object Constants {
     const val COLLECTION_COURTS = "courts"
     const val COLLECTION_RESERVATIONS = "reservations"
     const val COLLECTION_NOTIFICATIONS = "notifications"
+    const val COLLECTION_SPORT_CENTERS = "sport_centers"
 
     const val ROLE_ADMIN = "admin"
     const val ROLE_CLIENT = "client"

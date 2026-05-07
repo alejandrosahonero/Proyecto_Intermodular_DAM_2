@@ -6,8 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.model.CourtFilter
 import com.alejandrosahonero.courthub.domain.model.CourtType
+import com.alejandrosahonero.courthub.domain.model.SportCenter
 import com.alejandrosahonero.courthub.domain.model.User
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
+import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
+import com.alejandrosahonero.courthub.domain.repository.ISportCenterRepository
 import com.alejandrosahonero.courthub.domain.usecase.auth.LogoutUseCase
 import com.alejandrosahonero.courthub.domain.usecase.court.GetCourtsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +24,8 @@ import kotlinx.coroutines.launch
 data class ClientHomeUiState(
     val courts: List<Court> = emptyList(),
     val filteredCourts: List<Court> = emptyList(),
+    val centers: List<SportCenter> = emptyList(),
+    val selectedCenterId: String? = null,
     val currentUser: User? = null,
     val isLoading: Boolean = true,
     val searchQuery: String = "",
@@ -34,7 +39,8 @@ class ClientHomeViewModel(
     private val getCourtsUseCase: GetCourtsUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val authRepository: IAuthRepository,
-    private val notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
+    private val notificationRepository: INotificationRepository,
+    private val sportCenterRepository: ISportCenterRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ClientHomeUiState())
@@ -45,6 +51,15 @@ class ClientHomeViewModel(
         loadCourts()
         loadUnreadCount()
         loadFavorites()
+        loadCenters()
+    }
+
+    private fun loadCenters() {
+        viewModelScope.launch {
+            sportCenterRepository.getSportCenters().collect { centers ->
+                _uiState.update { it.copy(centers = centers) }
+            }
+        }
     }
 
     private fun loadFavorites() {
@@ -57,7 +72,11 @@ class ClientHomeViewModel(
                         it.copy(
                             favorites = newFavs,
                             filteredCourts = applyFilter(
-                                it.courts, it.searchQuery, it.activeFilter, newFavs
+                                it.courts,
+                                it.searchQuery,
+                                it.activeFilter,
+                                newFavs,
+                                it.selectedCenterId
                             )
                         )
                     }
@@ -77,7 +96,11 @@ class ClientHomeViewModel(
                         state.copy(
                             favorites = newFavs,
                             filteredCourts = applyFilter(
-                                state.courts, state.searchQuery, state.activeFilter, newFavs
+                                state.courts,
+                                state.searchQuery,
+                                state.activeFilter,
+                                newFavs,
+                                state.selectedCenterId
                             )
                         )
                     }
@@ -110,7 +133,11 @@ class ClientHomeViewModel(
                         it.copy(
                             courts = courts,
                             filteredCourts = applyFilter(
-                                courts, it.searchQuery, it.activeFilter, it.favorites
+                                courts,
+                                it.searchQuery,
+                                it.activeFilter,
+                                it.favorites,
+                                it.selectedCenterId
                             ),
                             isLoading = false,
                             isRefreshing = false
@@ -124,9 +151,14 @@ class ClientHomeViewModel(
         courts: List<Court>,
         query: String,
         filter: CourtFilter,
-        favorites: Set<String>
+        favorites: Set<String>,
+        centerId: String? = null
     ): List<Court> {
         var result = courts.filter { it.isEnabled }
+
+        if (!centerId.isNullOrBlank()) {
+            result = result.filter { it.centerId == centerId }
+        }
 
         result = when (filter) {
             CourtFilter.ALL -> result
@@ -154,7 +186,7 @@ class ClientHomeViewModel(
             state.copy(
                 searchQuery = query,
                 filteredCourts = applyFilter(
-                    state.courts, query, state.activeFilter, state.favorites
+                    state.courts, query, state.activeFilter, state.favorites, state.selectedCenterId
                 )
             )
         }
@@ -164,7 +196,25 @@ class ClientHomeViewModel(
         _uiState.update {
             it.copy(
                 activeFilter = filter,
-                filteredCourts = applyFilter(it.courts, it.searchQuery, filter, it.favorites)
+                filteredCourts = applyFilter(
+                    it.courts,
+                    it.searchQuery,
+                    filter,
+                    it.favorites,
+                    it.selectedCenterId
+                )
+            )
+        }
+    }
+
+    fun onCenterFilterSelected(centerId: String?) {
+        _uiState.update {
+            it.copy(
+                selectedCenterId = centerId,
+                filteredCourts = applyFilter(
+                    it.courts, it.searchQuery, it.activeFilter,
+                    it.favorites, centerId
+                )
             )
         }
     }
@@ -186,7 +236,11 @@ class ClientHomeViewModel(
                         it.copy(
                             courts = courts,
                             filteredCourts = applyFilter(
-                                courts, it.searchQuery, it.activeFilter, it.favorites
+                                courts,
+                                it.searchQuery,
+                                it.activeFilter,
+                                it.favorites,
+                                it.selectedCenterId
                             ),
                             isRefreshing = false
                         )
@@ -200,7 +254,8 @@ class ClientHomeViewModel(
             getCourtsUseCase: GetCourtsUseCase,
             logoutUseCase: LogoutUseCase,
             authRepository: IAuthRepository,
-            notificationRepository: com.alejandrosahonero.courthub.domain.repository.INotificationRepository
+            notificationRepository: INotificationRepository,
+            sportCenterRepository: ISportCenterRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -208,7 +263,8 @@ class ClientHomeViewModel(
                     getCourtsUseCase,
                     logoutUseCase,
                     authRepository,
-                    notificationRepository
+                    notificationRepository,
+                    sportCenterRepository
                 ) as T
         }
     }

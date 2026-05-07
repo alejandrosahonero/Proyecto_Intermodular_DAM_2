@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
@@ -37,7 +38,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +80,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.alejandrosahonero.courthub.CourtHubApp
 import com.alejandrosahonero.courthub.domain.model.Court
+import com.alejandrosahonero.courthub.domain.model.CourtType
+import com.alejandrosahonero.courthub.domain.model.SportCenter
 import com.alejandrosahonero.courthub.ui.screens.admin.AdminScaffold
 import com.alejandrosahonero.courthub.ui.theme.Error
 import com.alejandrosahonero.courthub.ui.theme.Outline
@@ -101,7 +107,8 @@ fun AdminCourtsScreen(navController: NavController) {
             app.container.courtRepository,
             app.container.disableCourtUseCase,
             app.container.authRepository,
-            app.container.notificationRepository
+            app.container.notificationRepository,
+            app.container.sportCenterRepository
         )
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -125,11 +132,24 @@ fun AdminCourtsScreen(navController: NavController) {
         Box(modifier = contentModifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    "Administrar Pistas",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Administrar Pistas", style = MaterialTheme.typography.headlineMedium)
+                    IconButton(
+                        onClick = { viewModel.onShowCreate() },
+                        modifier = Modifier
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(Red600)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -240,12 +260,25 @@ fun AdminCourtsScreen(navController: NavController) {
         )
     }
 
+    // Create sheet
+    if (uiState.showCreateSheet) {
+        CourtFormSheet(
+            title = "Nueva Pista",
+            initial = Court(),
+            centers = uiState.centers,
+            onDismiss = { viewModel.onDismissCreate() },
+            onConfirm = { viewModel.createCourt(it) }
+        )
+    }
+
     // Edit sheet
     uiState.courtToEdit?.let { court ->
-        EditCourtSheet(
-            court = court,
+        CourtFormSheet(
+            title = "Editar Pista",
+            initial = court,
+            centers = uiState.centers,
             onDismiss = { viewModel.onDismissEdit() },
-            onConfirm = { updated -> viewModel.updateCourt(updated) }
+            onConfirm = { viewModel.updateCourt(it) }
         )
     }
 
@@ -628,16 +661,22 @@ private fun DateTimeChip(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditCourtSheet(
-    court: Court,
+private fun CourtFormSheet(
+    title: String,
+    initial: Court,
+    centers: List<SportCenter>,
     onDismiss: () -> Unit,
     onConfirm: (Court) -> Unit
 ) {
-    var name by remember { mutableStateOf(court.name) }
-    var description by remember { mutableStateOf(court.description) }
-    var price by remember { mutableStateOf(court.pricePerHour.toString()) }
-    var imageUrl by remember { mutableStateOf(court.imageUrl ?: "") }
+    var name by remember { mutableStateOf(initial.name) }
+    var description by remember { mutableStateOf(initial.description) }
+    var price by remember { mutableStateOf(if (initial.pricePerHour > 0) initial.pricePerHour.toString() else "") }
+    var imageUrl by remember { mutableStateOf(initial.imageUrl ?: "") }
+    var selectedType by remember { mutableStateOf(initial.type) }
+    var selectedCenterId by remember { mutableStateOf(initial.centerId) }
     var inputError by remember { mutableStateOf<String?>(null) }
+    var expandedType by remember { mutableStateOf(false) }
+    var expandedCenter by remember { mutableStateOf(false) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -653,84 +692,156 @@ private fun EditCourtSheet(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp)
         ) {
-            Text("Editar Pista", style = MaterialTheme.typography.titleLarge)
-            Text(court.name, style = MaterialTheme.typography.bodyMedium, color = Red600)
+            Text(title, style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
-
+            // Nombre
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nombre *") },
-                singleLine = true,
+                value = name, onValueChange = { name = it },
+                label = { Text("Nombre *") }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = disableSheetFieldColors(),
-                shape = RoundedCornerShape(8.dp)
+                colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
             )
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Descripción
             OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
+                value = description, onValueChange = { description = it },
                 label = { Text("Descripción") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
-                colors = disableSheetFieldColors(),
-                shape = RoundedCornerShape(8.dp)
+                    .height(90.dp),
+                colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
             )
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Precio
             OutlinedTextField(
-                value = price,
-                onValueChange = { price = it },
-                label = { Text("Precio/hora *") },
-                singleLine = true,
+                value = price, onValueChange = { price = it },
+                label = { Text("Precio/hora *") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
-                colors = disableSheetFieldColors(),
-                shape = RoundedCornerShape(8.dp)
+                colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
             )
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // URL imagen
             OutlinedTextField(
-                value = imageUrl,
-                onValueChange = { imageUrl = it },
-                label = { Text("URL de imagen") },
-                singleLine = true,
+                value = imageUrl, onValueChange = { imageUrl = it },
+                label = { Text("URL de imagen") }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = disableSheetFieldColors(),
-                shape = RoundedCornerShape(8.dp)
+                colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
             )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Tipo de pista — dropdown
+            Text("Tipo de pista", style = MaterialTheme.typography.labelMedium, color = TextHint)
+            Spacer(modifier = Modifier.height(6.dp))
+            ExposedDropdownMenuBox(
+                expanded = expandedType,
+                onExpandedChange = { expandedType = !expandedType }
+            ) {
+                OutlinedTextField(
+                    value = selectedType.value,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tipo *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedType,
+                    onDismissRequest = { expandedType = false },
+                    containerColor = SurfaceVariant
+                ) {
+                    CourtType.entries.forEach { type ->
+                        DropdownMenuItem(
+                            text = { Text(type.value) },
+                            onClick = { selectedType = type; expandedType = false }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Centro deportivo — dropdown
+            Text("Centro deportivo", style = MaterialTheme.typography.labelMedium, color = TextHint)
+            Spacer(modifier = Modifier.height(6.dp))
+            ExposedDropdownMenuBox(
+                expanded = expandedCenter,
+                onExpandedChange = { expandedCenter = !expandedCenter }
+            ) {
+                val centerName = centers.firstOrNull { it.id == selectedCenterId }?.name
+                    ?: "Sin centro"
+                OutlinedTextField(
+                    value = centerName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Centro") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCenter) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    colors = disableSheetFieldColors(), shape = RoundedCornerShape(8.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedCenter,
+                    onDismissRequest = { expandedCenter = false },
+                    containerColor = SurfaceVariant
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Sin centro", color = TextHint) },
+                        onClick = { selectedCenterId = ""; expandedCenter = false }
+                    )
+                    centers.forEach { center ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(center.name, style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        center.city,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TextHint
+                                    )
+                                }
+                            },
+                            onClick = { selectedCenterId = center.id; expandedCenter = false }
+                        )
+                    }
+                }
+            }
 
             inputError?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(it, style = MaterialTheme.typography.bodySmall, color = Error)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = {
                     val priceDouble = price.toDoubleOrNull()
-                    if (name.isBlank()) {
-                        inputError = "El nombre es obligatorio"
-                        return@Button
-                    }
-                    if (priceDouble == null || priceDouble <= 0) {
-                        inputError = "Precio inválido"
-                        return@Button
+                    when {
+                        name.isBlank() -> {
+                            inputError = "El nombre es obligatorio"; return@Button
+                        }
+
+                        priceDouble == null || priceDouble <= 0 -> {
+                            inputError = "Precio inválido"; return@Button
+                        }
                     }
                     inputError = null
                     onConfirm(
-                        court.copy(
+                        initial.copy(
                             name = name,
                             description = description,
-                            pricePerHour = priceDouble,
-                            imageUrl = imageUrl.ifBlank { null }
+                            pricePerHour = priceDouble!!,
+                            imageUrl = imageUrl.ifBlank { null },
+                            type = selectedType,
+                            centerId = selectedCenterId
                         )
                     )
                 },
@@ -740,7 +851,7 @@ private fun EditCourtSheet(
                 shape = RoundedCornerShape(26.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Red600)
             ) {
-                Text("Guardar cambios", style = MaterialTheme.typography.titleMedium)
+                Text("Guardar", style = MaterialTheme.typography.titleMedium)
             }
         }
     }

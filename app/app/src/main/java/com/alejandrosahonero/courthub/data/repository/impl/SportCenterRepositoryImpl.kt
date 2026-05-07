@@ -16,7 +16,7 @@ class SportCenterRepositoryImpl(
 ) : ISportCenterRepository {
 
     override fun getSportCenters(): Flow<List<SportCenter>> = callbackFlow {
-        val listener = firestore.collection("sport_centers")
+        val listener = firestore.collection(Constants.COLLECTION_SPORT_CENTERS)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error); return@addSnapshotListener
@@ -31,7 +31,8 @@ class SportCenterRepositoryImpl(
 
     override suspend fun getSportCenterById(id: String): Result<SportCenter> {
         return try {
-            val doc = firestore.collection("sport_centers").document(id).get().await()
+            val doc =
+                firestore.collection(Constants.COLLECTION_SPORT_CENTERS).document(id).get().await()
             val dto = doc.toObject(SportCenterDto::class.java)
                 ?: return Result.failure(Exception("Centro no encontrado"))
             Result.success(dto.toDomain(doc.id))
@@ -42,7 +43,7 @@ class SportCenterRepositoryImpl(
 
     override suspend fun createSportCenter(center: SportCenter): Result<Unit> {
         return try {
-            firestore.collection("sport_centers").add(center.toDto()).await()
+            firestore.collection(Constants.COLLECTION_SPORT_CENTERS).add(center.toDto()).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -51,7 +52,7 @@ class SportCenterRepositoryImpl(
 
     override suspend fun updateSportCenter(center: SportCenter): Result<Unit> {
         return try {
-            firestore.collection("sport_centers")
+            firestore.collection(Constants.COLLECTION_SPORT_CENTERS)
                 .document(center.id).set(center.toDto()).await()
             Result.success(Unit)
         } catch (e: Exception) {
@@ -61,7 +62,7 @@ class SportCenterRepositoryImpl(
 
     override suspend fun deleteSportCenter(id: String): Result<Unit> {
         return try {
-            firestore.collection("sport_centers").document(id).delete().await()
+            firestore.collection(Constants.COLLECTION_SPORT_CENTERS).document(id).delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
