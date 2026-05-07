@@ -56,9 +56,11 @@ class ClientHomeViewModel(
 
     private fun loadCenters() {
         viewModelScope.launch {
-            sportCenterRepository.getSportCenters().collect { centers ->
-                _uiState.update { it.copy(centers = centers) }
-            }
+            sportCenterRepository.getSportCenters()
+                .catch { /* Silently ignore auth errors on logout */ }
+                .collect { centers ->
+                    _uiState.update { it.copy(centers = centers) }
+                }
         }
     }
 
@@ -111,9 +113,11 @@ class ClientHomeViewModel(
     private fun loadUnreadCount() {
         viewModelScope.launch {
             val user = authRepository.getCurrentUser() ?: return@launch
-            notificationRepository.getUnreadCount(user.uid).collect { count ->
-                _uiState.update { it.copy(unreadCount = count) }
-            }
+            notificationRepository.getUnreadCount(user.uid)
+                .catch { _uiState.update { it.copy(unreadCount = 0) } }
+                .collect { count ->
+                    _uiState.update { it.copy(unreadCount = count) }
+                }
         }
     }
 

@@ -7,6 +7,7 @@ import com.alejandrosahonero.courthub.domain.model.SportCenter
 import com.alejandrosahonero.courthub.domain.repository.ISportCenterRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -33,9 +34,14 @@ class AdminCentersViewModel(
 
     private fun loadCenters() {
         viewModelScope.launch {
-            sportCenterRepository.getSportCenters().collect { centers ->
-                _uiState.update { it.copy(centers = centers, isLoading = false) }
-            }
+            sportCenterRepository.getSportCenters()
+                .catch { e ->
+                    // Si falla al cerrar sesión, no cerramos la app
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+                .collect { centers ->
+                    _uiState.update { it.copy(centers = centers, isLoading = false) }
+                }
         }
     }
 
