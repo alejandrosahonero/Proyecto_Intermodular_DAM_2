@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Stadium
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -70,7 +72,8 @@ fun ClientHomeScreen(navController: NavController) {
             getCourtsUseCase = app.container.getCourtsUseCase,
             logoutUseCase = app.container.logoutUseCase,
             authRepository = app.container.authRepository,
-            notificationRepository = app.container.notificationRepository
+            notificationRepository = app.container.notificationRepository,
+            sportCenterRepository = app.container.sportCenterRepository
         )
     )
 
@@ -152,6 +155,48 @@ fun ClientHomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ── Filtros por Centro ──────────────────────────────────────────
+            if (uiState.centers.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 0.dp)
+                ) {
+                    item {
+                        val selected = uiState.selectedCenterId == null
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onCenterFilterSelected(null) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                "Todos",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                    items(uiState.centers) { center ->
+                        val selected = uiState.selectedCenterId == center.id
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (selected) Red600 else SurfaceVariant)
+                                .clickable { viewModel.onCenterFilterSelected(center.id) }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                center.name,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (selected) Color.White else TextHint
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // ── Filtros ───────────────────────────────────────────────────────
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -208,6 +253,7 @@ fun ClientHomeScreen(navController: NavController) {
                             CourtCard(
                                 court = court,
                                 isFavorite = uiState.favorites.contains(court.id),
+                                centerName = uiState.centers.firstOrNull { it.id == court.centerId }?.name,
                                 onToggleFavorite = { viewModel.toggleFavorite(court.id) },
                                 onClick = {
                                     navController.navigate(Screen.CourtDetail.createRoute(court.id))
@@ -231,6 +277,7 @@ fun ClientHomeScreen(navController: NavController) {
 private fun CourtCard(
     court: Court,
     isFavorite: Boolean,
+    centerName: String?,
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
@@ -304,6 +351,22 @@ private fun CourtCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (!centerName.isNullOrBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Stadium,
+                                    contentDescription = null,
+                                    tint = TextHint,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    centerName,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = TextHint
+                                )
+                            }
+                        }
                     }
                 }
 

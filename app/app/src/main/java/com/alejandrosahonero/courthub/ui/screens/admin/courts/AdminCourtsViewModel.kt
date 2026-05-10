@@ -10,9 +10,11 @@ import androidx.work.WorkManager
 import com.alejandrosahonero.courthub.domain.model.AdminCourtFilter
 import com.alejandrosahonero.courthub.domain.model.Court
 import com.alejandrosahonero.courthub.domain.model.CourtType
+import com.alejandrosahonero.courthub.domain.model.SportCenter
 import com.alejandrosahonero.courthub.domain.repository.IAuthRepository
 import com.alejandrosahonero.courthub.domain.repository.ICourtRepository
 import com.alejandrosahonero.courthub.domain.repository.INotificationRepository
+import com.alejandrosahonero.courthub.domain.repository.ISportCenterRepository
 import com.alejandrosahonero.courthub.domain.usecase.court.DisableCourtUseCase
 import com.alejandrosahonero.courthub.utils.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,15 +25,18 @@ import kotlinx.coroutines.launch
 data class AdminCourtsUiState(
     val courts: List<Court> = emptyList(),
     val filteredCourts: List<Court> = emptyList(),
+    val centers: List<SportCenter> = emptyList(),
     val isLoading: Boolean = true,
     val searchQuery: String = "",
     val error: String? = null,
     val courtToEdit: Court? = null,
     val showDeleteDialog: Court? = null,
     val courtToDisable: Court? = null,
+    val showCreateSheet: Boolean = false,
     val isRefreshing: Boolean = false,
     val unreadCount: Int = 0,
-    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL
+    val activeFilter: AdminCourtFilter = AdminCourtFilter.ALL,
+    val selectedCenterId: String? = null
 )
 
 class AdminCourtsViewModel(
@@ -39,7 +44,8 @@ class AdminCourtsViewModel(
     private val courtRepository: ICourtRepository,
     private val disableCourtUseCase: DisableCourtUseCase,
     private val authRepository: IAuthRepository,
-    private val notificationRepository: INotificationRepository
+    private val notificationRepository: INotificationRepository,
+    private val sportCenterRepository: ISportCenterRepository
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(AdminCourtsUiState())
@@ -48,6 +54,15 @@ class AdminCourtsViewModel(
     init {
         loadCourts()
         loadUnreadCount()
+        loadCenters()
+    }
+
+    private fun loadCenters() {
+        viewModelScope.launch {
+            sportCenterRepository.getSportCenters().collect { centers ->
+                _uiState.update { it.copy(centers = centers) }
+            }
+        }
     }
 
     private fun loadUnreadCount() {
@@ -65,7 +80,12 @@ class AdminCourtsViewModel(
                 _uiState.update {
                     it.copy(
                         courts = courts,
-                        filteredCourts = filterCourts(courts, it.searchQuery, it.activeFilter),
+                        filteredCourts = filterCourts(
+                            courts,
+                            it.searchQuery,
+                            it.activeFilter,
+                            it.selectedCenterId
+                        ),
                         isLoading = false,
                         isRefreshing = false
                     )
@@ -77,7 +97,8 @@ class AdminCourtsViewModel(
     private fun filterCourts(
         courts: List<Court>,
         query: String,
-        filter: AdminCourtFilter
+        filter: AdminCourtFilter,
+        centerId: String?
     ): List<Court> {
         var result = when (filter) {
             AdminCourtFilter.ALL -> courts
@@ -90,10 +111,18 @@ class AdminCourtsViewModel(
             AdminCourtFilter.TENIS -> courts.filter { it.type == CourtType.TENIS }
             AdminCourtFilter.CRISTAL -> courts.filter { it.type == CourtType.CRISTAL }
         }
+
+        if (centerId != null) {
+            result = result.filter { it.centerId == centerId }
+        }
+
         if (query.isNotBlank()) {
+            val centerNames = _uiState.value.centers.associate { it.id to it.name }
             result = result.filter {
+                val cName = centerNames[it.centerId] ?: ""
                 it.name.contains(query, ignoreCase = true) ||
-                        it.type.value.contains(query, ignoreCase = true)
+                        it.type.value.contains(query, ignoreCase = true) ||
+                        cName.contains(query, ignoreCase = true)
             }
         }
         return result
@@ -103,7 +132,12 @@ class AdminCourtsViewModel(
         _uiState.update {
             it.copy(
                 searchQuery = query,
-                filteredCourts = filterCourts(it.courts, query, it.activeFilter)
+                filteredCourts = filterCourts(
+                    it.courts,
+                    query,
+                    it.activeFilter,
+                    it.selectedCenterId
+                )
             )
         }
     }
@@ -112,7 +146,21 @@ class AdminCourtsViewModel(
         _uiState.update {
             it.copy(
                 activeFilter = filter,
-                filteredCourts = filterCourts(it.courts, it.searchQuery, filter)
+                filteredCourts = filterCourts(
+                    it.courts,
+                    it.searchQuery,
+                    filter,
+                    it.selectedCenterId
+                )
+            )
+        }
+    }
+
+    fun onCenterFilterSelected(centerId: String?) {
+        _uiState.update {
+            it.copy(
+                selectedCenterId = centerId,
+                filteredCourts = filterCourts(it.courts, it.searchQuery, it.activeFilter, centerId)
             )
         }
     }
@@ -200,6 +248,23 @@ class AdminCourtsViewModel(
     fun onDismissDisable() = _uiState.update { it.copy(courtToDisable = null) }
     fun onEditCourt(court: Court) = _uiState.update { it.copy(courtToEdit = court) }
     fun onDismissEdit() = _uiState.update { it.copy(courtToEdit = null) }
+    fun onShowCreate() = _uiState.update { it.copy(showCreateSheet = true) }
+    fun onDismissCreate() = _uiState.update { it.copy(showCreateSheet = false) }
+
+    fun createCourt(court: Court) {
+        viewModelScope.launch {
+            courtRepository.createCourt(court)
+                .onSuccess {
+                    _uiState.update { it.copy(showCreateSheet = false) }
+                    sendLocalNotification(
+                        "Pista Creada",
+                        "La pista ${court.name} ha sido creada correctamente."
+                    )
+                }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
+    }
+
     fun onDeleteRequest(court: Court) = _uiState.update { it.copy(showDeleteDialog = court) }
     fun onDismissDelete() = _uiState.update { it.copy(showDeleteDialog = null) }
     fun clearError() = _uiState.update { it.copy(error = null) }
@@ -210,7 +275,8 @@ class AdminCourtsViewModel(
             courtRepository: ICourtRepository,
             disableCourtUseCase: DisableCourtUseCase,
             authRepository: IAuthRepository,
-            notificationRepository: INotificationRepository
+            notificationRepository: INotificationRepository,
+            sportCenterRepository: ISportCenterRepository
         ) = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T =
@@ -219,7 +285,8 @@ class AdminCourtsViewModel(
                     courtRepository,
                     disableCourtUseCase,
                     authRepository,
-                    notificationRepository
+                    notificationRepository,
+                    sportCenterRepository
                 ) as T
         }
     }

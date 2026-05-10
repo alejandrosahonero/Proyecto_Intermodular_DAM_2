@@ -11,6 +11,7 @@ import com.alejandrosahonero.courthub.domain.repository.ISupportRepository
 import com.alejandrosahonero.courthub.domain.usecase.auth.LogoutUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -57,9 +58,14 @@ class ProfileViewModel(
     private fun loadUnreadCount() {
         viewModelScope.launch {
             val user = authRepository.getCurrentUser() ?: return@launch
-            notificationRepository.getUnreadCount(user.uid).collect { count ->
-                _uiState.update { it.copy(unreadCount = count) }
-            }
+            notificationRepository.getUnreadCount(user.uid)
+                .catch { e ->
+                    // Si falla por permisos al cerrar sesión, simplemente ignoramos
+                    _uiState.update { it.copy(unreadCount = 0) }
+                }
+                .collect { count ->
+                    _uiState.update { it.copy(unreadCount = count) }
+                }
         }
     }
 

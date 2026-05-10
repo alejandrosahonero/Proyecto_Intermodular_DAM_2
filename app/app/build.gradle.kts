@@ -98,6 +98,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
@@ -105,4 +107,5 @@ dependencies {
     implementation(libs.mlkit.barcode)
     implementation(libs.zxing.core)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.play.services.location)
 }

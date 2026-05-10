@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Stadium
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -38,9 +39,10 @@ data class ClientNavItem(
 
 val clientNavItems = listOf(
     ClientNavItem("Inicio", Icons.Default.Home, Screen.ClientHome),
+    ClientNavItem("Centros", Icons.Default.Stadium, Screen.ClientCenters),
     ClientNavItem("Reservas", Icons.Default.DateRange, Screen.ClientReservations),
     ClientNavItem("Alertas", Icons.Default.Notifications, Screen.ClientNotifications),
-    ClientNavItem("Buscar", Icons.Default.Search, Screen.ClientHome) // placeholder
+    ClientNavItem("Buscar", Icons.Default.Search, Screen.ClientHome)
 )
 
 @Composable

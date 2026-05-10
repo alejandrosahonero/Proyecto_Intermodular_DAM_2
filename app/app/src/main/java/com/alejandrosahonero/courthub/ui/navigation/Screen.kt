@@ -8,6 +8,10 @@ sealed class Screen(val route: String) {
 
     // ── Client ────────────────────────────────────────────────────────────────
     data object ClientHome : Screen("client_home")
+    data object ClientCenters : Screen("client_centers")
+    data object SportCenterDetail : Screen("sport_center_detail/{centerId}") {
+        fun createRoute(centerId: String) = "sport_center_detail/$centerId"
+    }
     data object ClientReservations : Screen("client_reservations")
     data object ClientNotifications : Screen("client_notifications")
     data object ClientProfile : Screen("client_profile")
@@ -36,6 +40,7 @@ sealed class Screen(val route: String) {
 
     // ── Admin ─────────────────────────────────────────────────────────────────
     data object AdminHome : Screen("admin_home")
+    data object AdminCenters : Screen("admin_centers")
     data object AdminCourts : Screen("admin_courts")
     data object AdminReservations : Screen("admin_reservations")
     data object AdminScanner : Screen("admin_scanner")

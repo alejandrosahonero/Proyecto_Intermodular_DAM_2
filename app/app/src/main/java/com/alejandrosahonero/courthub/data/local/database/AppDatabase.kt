@@ -20,7 +20,7 @@ import com.alejandrosahonero.courthub.data.model.local.UserEntity
         ReservationEntity::class,
         NotificationEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

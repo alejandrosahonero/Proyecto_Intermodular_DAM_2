@@ -8,6 +8,7 @@ data class Court(
     val isEnabled: Boolean = true,
     val description: String = "",
     val imageUrl: String? = null,
+    val centerId: String = "",
     // Estos tres campos solo tienen valor cuando la pista está deshabilitada
     val disabledReason: String? = null,
     val disabledFrom: Long? = null,   // epoch millis
