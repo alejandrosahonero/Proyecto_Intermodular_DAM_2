@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -190,12 +189,6 @@ fun ProfileScreen(navController: NavController) {
                         )
                     )
                 }
-                ProfileActionItem(
-                    icon = Icons.Default.Settings,
-                    label = "Configuración de Cuenta",
-                    subtitle = "Actualiza los detalles de tu cuenta",
-                    onClick = {}
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))

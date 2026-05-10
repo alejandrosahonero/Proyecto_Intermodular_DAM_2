@@ -19,8 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -137,18 +135,6 @@ fun AdminProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             ProfileSection(title = "Configuración") {
-                ProfileActionItem(
-                    icon = Icons.Default.Notifications,
-                    label = "Notificaciones",
-                    subtitle = "Gestiona tus preferencias de notificaciones",
-                    onClick = {}
-                )
-                ProfileActionItem(
-                    icon = Icons.Default.Settings,
-                    label = "Configuración de Cuenta",
-                    subtitle = "Actualiza los detalles de tu cuenta",
-                    onClick = {}
-                )
                 ProfileActionItem(
                     icon = Icons.Default.SupportAgent,
                     label = "Datos de Soporte",

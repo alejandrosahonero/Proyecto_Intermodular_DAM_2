@@ -11,6 +11,7 @@ import com.alejandrosahonero.courthub.domain.repository.IReservationRepository
 import com.alejandrosahonero.courthub.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -49,15 +50,19 @@ class AdminHomeViewModel(
     private fun loadUnreadCount() {
         viewModelScope.launch {
             val user = authRepository.getCurrentUser() ?: return@launch
-            notificationRepository.getUnreadCount(user.uid).collect { count ->
-                _uiState.update { it.copy(unreadCount = count) }
-            }
+            notificationRepository.getUnreadCount(user.uid)
+                .catch { _uiState.update { it.copy(unreadCount = 0) } }
+                .collect { count ->
+                    _uiState.update { it.copy(unreadCount = count) }
+                }
         }
     }
 
     private fun loadStats() {
         viewModelScope.launch {
-            reservationRepository.getAllReservations().collect { reservations ->
+            reservationRepository.getAllReservations()
+                .catch { /* Ignorar errores al cerrar sesión */ }
+                .collect { reservations ->
                 val today = DateUtils.todayString()
                 val weekAgo = LocalDate.now().minusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE)
 
