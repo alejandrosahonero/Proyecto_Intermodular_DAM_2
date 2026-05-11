@@ -19,6 +19,7 @@ Table courts {
   is_enabled boolean
   description text
   image_url varchar
+  center_id integer [not null]
   disabled_reason text
   disabled_from timestamp
   disabled_until timestamp
@@ -51,7 +52,24 @@ Table notifications {
   created_at timestamp
 }
 
+Table sport_centers {
+  id integer [primary key]
+  name varchar
+  description varchar
+  address varchar
+  city varchar
+  latitude decimal
+  longitude decimal
+  imageUrl varchar
+  phone varchar
+  email varchar
+  isEnabled boolean
+  createdAt timestamp
+}
+
+
 // Relaciones
 Ref: reservations.user_id > users.id // Many-to-one
 Ref: reservations.court_id > courts.id // Many-to-one
 Ref: notifications.user_id > users.id // Many-to-one
+Ref: courts.center_id > sport_centers.id

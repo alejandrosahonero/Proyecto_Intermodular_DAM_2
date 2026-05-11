@@ -493,6 +493,146 @@
       "hackoladeMeta": {
         "validationErrors": {}
       }
+    },
+    {
+      "collectionName": "sport_centers",
+      "type": "object",
+      "properties": [
+        {
+          "primaryKey": true,
+          "properties": [],
+          "additionalProperties": false,
+          "childType": "object",
+          "type": "document",
+          "documentId": true,
+          "containerLevelKey": true,
+          "hasERDDivider": true,
+          "name": "id",
+          "isActivated": true,
+          "GUID": "2b589e39-41c1-4768-98d6-f5942b7eb95d",
+          "sampleName": "",
+          "isPatternField": true,
+          "error": {
+            "name": false,
+            "sampleName": false
+          }
+        },
+        {
+          "name": "name",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "5da94ba6-f0da-4579-aad5-24cead80922b",
+          "error": {}
+        },
+        {
+          "name": "description",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "6a137ed0-7323-4266-adde-5c42fb7f895b",
+          "error": {}
+        },
+        {
+          "name": "address",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "95056ac6-79a8-4bab-841f-70ecabed9219",
+          "error": {}
+        },
+        {
+          "name": "city",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "84e4c568-bdda-45bb-b6d4-30db0a02a9b6",
+          "error": {}
+        },
+        {
+          "name": "latitude",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "numeric",
+          "GUID": "8688fdd2-3690-41ae-ac1c-1b67b5db5930",
+          "error": {},
+          "childType": "number"
+        },
+        {
+          "name": "longitude",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "numeric",
+          "GUID": "25ace732-8677-4ad7-931e-1cbae912bff0",
+          "error": {},
+          "childType": "number"
+        },
+        {
+          "name": "imageUrl",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "c9d11494-d9bf-4216-9025-c05bedbdd759",
+          "error": {}
+        },
+        {
+          "name": "phone",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "c1637359-417e-47fa-8341-238c678f2577",
+          "error": {}
+        },
+        {
+          "name": "email",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "string",
+          "GUID": "9e0e8e62-8cac-44e8-8723-61584a0d0fb9",
+          "error": {}
+        },
+        {
+          "name": "isEnabled",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "boolean",
+          "GUID": "bc844a53-4591-476d-97ec-67d4bbcae121",
+          "error": {},
+          "childType": "boolean"
+        },
+        {
+          "name": "createdAt",
+          "hackoladeMeta": {},
+          "isActivated": true,
+          "primaryKey": false,
+          "type": "timestamp",
+          "GUID": "24fe5dd1-0d61-4598-b76d-f0c36bcc77b8",
+          "error": {}
+        }
+      ],
+      "definitions": {
+        "type": "definitions",
+        "properties": [],
+        "GUID": "c0cc3fa4-5ae4-425f-bf4c-5d39d0fe16fc"
+      },
+      "isActivated": true,
+      "additionalProperties": false,
+      "GUID": "111a9dc4-a6ed-4985-9106-2ec80e7f574c",
+      "bucketId": "1df3198f-3e71-4271-a1c2-d0bc42413172",
+      "id": "id",
+      "hackoladeMeta": {
+        "validationErrors": {}
+      }
     }
   ],
   "buckets": [
@@ -503,7 +643,8 @@
         "4d88c2cc-b6f2-4e92-a82e-96e078d72879",
         "bdf09b92-8b68-47f8-b2dd-0c6f13a8633c",
         "325f2905-0aae-45f7-8233-db831ede5cf8",
-        "69ecd016-12ea-4741-bc48-7fb8a8d14118"
+        "69ecd016-12ea-4741-bc48-7fb8a8d14118",
+        "111a9dc4-a6ed-4985-9106-2ec80e7f574c"
       ],
       "backgroundColor": {
         "r": 129,
@@ -572,7 +713,20 @@
     "88fb3878-7ca5-4642-97f9-0882f259ab30": "disabledFrom",
     "ff6fa948-9ab6-47e2-9340-475b99e5b0f8": "disabledUntil",
     "4d75ce68-5933-452e-965e-b66583acd351": "cancellationReason",
-    "6a501e94-9fe9-4b74-abf8-cff441f534ec": "cancelledAt"
+    "6a501e94-9fe9-4b74-abf8-cff441f534ec": "cancelledAt",
+    "5da94ba6-f0da-4579-aad5-24cead80922b": "name",
+    "6a137ed0-7323-4266-adde-5c42fb7f895b": "description",
+    "95056ac6-79a8-4bab-841f-70ecabed9219": "address",
+    "84e4c568-bdda-45bb-b6d4-30db0a02a9b6": "city",
+    "8688fdd2-3690-41ae-ac1c-1b67b5db5930": "latitude",
+    "25ace732-8677-4ad7-931e-1cbae912bff0": "longitude",
+    "c9d11494-d9bf-4216-9025-c05bedbdd759": "imageUrl",
+    "c1637359-417e-47fa-8341-238c678f2577": "phone",
+    "9e0e8e62-8cac-44e8-8723-61584a0d0fb9": "email",
+    "bc844a53-4591-476d-97ec-67d4bbcae121": "isEnabled",
+    "24fe5dd1-0d61-4598-b76d-f0c36bcc77b8": "createdAt",
+    "111a9dc4-a6ed-4985-9106-2ec80e7f574c": "sport_centers",
+    "2b589e39-41c1-4768-98d6-f5942b7eb95d": "id"
   },
   "definitions": {
     "type": "definitions",
@@ -642,6 +796,14 @@
             "y": 1053.381255659823,
             "width": 219.94687478231447,
             "height": 162.63187513061132,
+            "color": {}
+          },
+          {
+            "GUID": "111a9dc4-a6ed-4985-9106-2ec80e7f574c",
+            "x": 1500,
+            "y": 1100,
+            "width": 250,
+            "height": 300,
             "color": {}
           }
         ],
